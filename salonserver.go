@@ -21,11 +21,13 @@ func init() {
 	}
 }
 
-func Serve() {
+func Serve(salon int) {
 	var err error
 	var dir string
 
-	migrate()
+	if salon == 2 {
+		migrate()
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
