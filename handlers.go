@@ -172,7 +172,7 @@ func apiTeam(w http.ResponseWriter, r *http.Request) {
 
 	db := dbConn()
 	team := []TeamMember{}
-	db.Where("salon = ?", 2).Order("position").Find(&team)
+	db.Where("salon = ?", salon).Order("position").Find(&team)
 	db.Close()
 
 	json, err := json.Marshal(team)
@@ -190,7 +190,7 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 
 	db := dbConn()
 	tm := TeamMember{}
-	db.Where("slug = ?", param).First(&tm)
+	db.Where("salon = ?", salon).Where("slug = ?", param).First(&tm)
 	db.Close()
 
 	json, err := json.Marshal(tm)
@@ -210,16 +210,22 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	if param == "brad" {
 		param = "bradley"
 	}
+	if param == "nat" {
+		param = "natalie"
+	}
+	if param == "matt" {
+		param = "matthew"
+	}
 
 	param = strings.Title(param)
 
 	if param == "All" {
 		db := dbConn()
-		db.Where("salon = ?", 2).Find(&reviews)
+		db.Where("salon = ?", salon).Find(&reviews)
 		db.Close()
 	} else {
 		db := dbConn()
-		db.Where("salon = ?", "2").Where("stylist LIKE ?", "Staff: "+param+" %").Find(&reviews)
+		db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Find(&reviews)
 		db.Close()
 	}
 
