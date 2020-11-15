@@ -35,7 +35,7 @@ func Serve(salon int) {
 	}
 
 	tpl = template.Must(template.ParseFiles(
-		"views/index.gohtml"))
+		"index.gohtml"))
 	if err != nil {
 		panic(err)
 	}
