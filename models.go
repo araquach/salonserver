@@ -1,4 +1,4 @@
-package main
+package salonserver
 
 import (
 	"github.com/jinzhu/gorm"
