@@ -49,33 +49,61 @@ func home(w http.ResponseWriter, r *http.Request) {
 	if dir == "team" && len(name) > 0 {
 		db := dbConn()
 		m := TeamMember{}
-		db.Where("slug = ?", name).First(&m)
+		db.Where("salon = ? AND slug = ?", salon, name).First(&m)
 		db.Close()
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
-		i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
-
+		if salon == 1 {
+			i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + m.Slug + ".png"
+		} else if salon == 2 {
+			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
+		} else if salon == 3 {
+			i = "https://www.basehairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
+		}
 	} else if dir == "reviews" {
 		if name == "all" {
 			t = "Recent Reviews from our happy customers"
-			d = "The PK team recieve consistently great reviews. Check them out here. You can filter by stylist too"
-			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/reviews.png"
-
+			d = "The team receives consistently great reviews. Check them out here. You can filter by stylist too"
+			if salon == 1 {
+				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/reviews.png"
+			}
+			if salon == 2 {
+				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/reviews.png"
+			}
+			if salon == 3 {
+				i = "https://www.basehairdressing.com/dist/img/fb_meta/reviews.png"
+			}
 		} else {
 			if name == "brad" {
 				name = "bradley"
+			}
+			if name == "nat" {
+				name = "natalie"
+			}
+			if name == "matt" {
+				name = "matthew"
 			}
 
 			db := dbConn()
 			r := Review{}
 			param := strings.Title(name)
-			db.Where("salon = ?", "2").Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
+			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 			db.Close()
 
 			t = param + " recently received this great review!"
 			d = r.Review
-			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + name + ".png"
+
+			if salon == 1 {
+				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + name + ".png"
+			}
+			if salon == 2 {
+				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + name + ".png"
+			}
+			if salon == 3 {
+				i = "https://www.basehairdressing.com/dist/img/fb_meta/" + name + ".png"
+			}
+
 		}
 
 	} else if dir == "blog" {
@@ -96,7 +124,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		db := dbConn()
 		m := MetaInfo{}
-		db.Where("salon = ?", 2).Where("page = ?", page).First(&m)
+		db.Where("salon = ?", salon).Where("page = ?", page).First(&m)
 		db.Close()
 
 		if m.Title != "" {

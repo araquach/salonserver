@@ -12,6 +12,7 @@ import (
 
 var (
 	tpl *template.Template
+	salon int
 )
 
 func init() {
@@ -21,9 +22,11 @@ func init() {
 	}
 }
 
-func Serve(salon int) {
+func Serve(s int) {
 	var err error
 	var dir string
+
+	salon = s
 
 	if salon == 2 {
 		migrate()
