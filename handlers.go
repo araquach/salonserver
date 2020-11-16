@@ -149,11 +149,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 			if m.Title != "" {
 				switch salon {
 				case 1:
-					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/\" + m.Image + \".png"
+					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + m.Image + ".png"
 				case 2:
-					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/\" + m.Image + \".png"
+					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Image + ".png"
 				case 3:
-					i = "https://www.basehairdressing.com/dist/img/fb_meta/\" + m.Image + \".png"
+					i = "https://www.basehairdressing.com/dist/img/fb_meta/" + m.Image + ".png"
 				}
 			} else {
 				switch salon {
