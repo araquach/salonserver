@@ -54,24 +54,25 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
-		if salon == 1 {
+		switch salon {
+		case 1:
 			i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + m.Slug + ".png"
-		} else if salon == 2 {
+		case 2:
 			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
-		} else if salon == 3 {
+		case 3:
 			i = "https://www.basehairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
 		}
+
 	} else if dir == "reviews" {
 		if name == "all" {
 			t = "Recent Reviews from our happy customers"
 			d = "The team receives consistently great reviews. Check them out here. You can filter by stylist too"
-			if salon == 1 {
+			switch salon {
+			case 1:
 				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/reviews.png"
-			}
-			if salon == 2 {
+			case 2:
 				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/reviews.png"
-			}
-			if salon == 3 {
+			case 3:
 				i = "https://www.basehairdressing.com/dist/img/fb_meta/reviews.png"
 			}
 		} else {
@@ -94,16 +95,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 			t = param + " recently received this great review!"
 			d = r.Review
 
-			if salon == 1 {
+			switch salon {
+			case 1:
 				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + name + ".png"
-			}
-			if salon == 2 {
+			case 2:
 				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + name + ".png"
-			}
-			if salon == 3 {
+			case 3:
 				i = "https://www.basehairdressing.com/dist/img/fb_meta/" + name + ".png"
 			}
-
 		}
 
 	} else if dir == "blog" || dir == "blog-info" {
