@@ -46,7 +46,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		name = "home"
 	}
 
-	if dir == "team" && len(name) > 0 {
+	if dir == "team" || dir == "team-info" && len(name) > 0 {
 		db := dbConn()
 		m := TeamMember{}
 		db.Where("salon = ? AND slug = ?", salon, name).First(&m)
@@ -106,7 +106,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-	} else if dir == "blog" {
+	} else if dir == "blog" || dir == "blog-info" {
 		path := path.Join(dir, name)
 
 		data, err := ioutil.ReadFile(path + ".txt")
@@ -120,7 +120,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 		d = string(lines[6])
 
 	} else {
-		page := path.Join(dir, name)
+		split := strings.Split(name, "-")[0]
+
+		page := path.Join(dir, split)
 
 		db := dbConn()
 		m := MetaInfo{}
@@ -136,14 +138,46 @@ func home(w http.ResponseWriter, r *http.Request) {
 		if m.Text != "" {
 			d = m.Text
 		} else {
-			d = "Paul Kemp Hairdressing is a luxurious hair salon right in the heart of Warrington town centre. Sister salon to the award winning Jakata Hair and Beauty team, the stunning Salon opened back in June 2011 with the aim to offer an ultra relaxing atmosphere, first class customer service, alongside the highest level of hairdressing expertise. The salon's talented hairdressers are all trained to the highest level in cutting, colouring and styling hair, with specialists in technical colour, hair straightening, wedding hair and hair extensions. The team has a wealth of experience in all aspects of hairdressing"
-		}
+			switch salon {
+			case 1:
+				d = "Jakata is a fashion forward salon in Warrington Town Centre"
+			case 2:
+				d = "Paul Kemp Hairdressing is a luxurious hair salon right in the heart of Warrington town centre. Sister salon to the award winning Jakata Hair and Beauty team, the stunning Salon opened back in June 2011 with the aim to offer an ultra relaxing atmosphere, first class customer service, alongside the highest level of hairdressing expertise. The salon's talented hairdressers are all trained to the highest level in cutting, colouring and styling hair, with specialists in technical colour, hair straightening, wedding hair and hair extensions. The team has a wealth of experience in all aspects of hairdressing"
+			case 3:
+				d = "Base Hairdressing is an Academy for the next generation of super-skilled stylists"
+			}
 
-		if m.Title != "" {
-			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Image + ".png"
-		} else {
-			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/home.png"
+			if m.Title != "" {
+				switch salon {
+				case 1:
+					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/\" + m.Image + \".png"
+				case 2:
+					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/\" + m.Image + \".png"
+				case 3:
+					i = "https://www.basehairdressing.com/dist/img/fb_meta/\" + m.Image + \".png"
+				}
+			} else {
+				switch salon {
+				case 1:
+					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/home.png"
+				case 2:
+					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/home.png"
+				case 3:
+					i = "https://www.basehairdressing.com/dist/img/fb_meta/home.png"
+				}
+			}
 		}
+	}
+
+	var salonUrl string
+
+	switch salon {
+	case 1:
+		salonUrl = "https://www.jakatasalon.co.uk/"
+	case 2:
+		salonUrl = "https://www.paulkemphairdressing.com/"
+	case 3:
+		salonUrl = "https://www.basehairdressing.com/"
 	}
 
 	path := path.Join(dir, name)
@@ -156,7 +190,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		"ogImage":       i,
 		"ogImageWidth":  "1200",
 		"ogImageHeight": "628",
-		"ogUrl":         "https://www.paulkemphairdressing.com/" + path,
+		"ogUrl":         salonUrl + path,
 		"version":       v,
 	}
 
