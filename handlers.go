@@ -135,12 +135,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 			case 3:
 				d = "Base Hairdressing is an Academy for the next generation of super-skilled stylists"
 			}
+		}
 
-			if m.Title != "" {
-				i = salonURL + "/dist/img/fb_meta/" + m.Image + ".png"
-			} else {
-				i = salonURL + "/dist/img/fb_meta/home.png"
-			}
+		if m.Title != "" {
+			i = salonURL + "/dist/img/fb_meta/" + m.Image + ".png"
+		} else {
+			i = salonURL + "/dist/img/fb_meta/home.png"
 		}
 	}
 
