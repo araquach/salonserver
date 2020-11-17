@@ -31,6 +31,18 @@ func forceSsl(next http.Handler) http.Handler {
 	})
 }
 
+func longName(n string) {
+	if n == "brad" {
+		n = "bradley"
+	}
+	if n == "nat" {
+		n = "natalie"
+	}
+	if n == "matt" {
+		n = "matthew"
+	}
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	// Generate version number for scripts and css
@@ -74,21 +86,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 			i = salonURL + "/dist/img/fb_meta/reviews.png"
 
 		} else {
-			if name == "brad" {
-				name = "bradley"
-			}
-			if name == "nat" {
-				name = "natalie"
-			}
-			if name == "matt" {
-				name = "matthew"
-			}
-
 			db := dbConn()
 			r := Review{}
 			param := strings.Title(name)
 			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 			db.Close()
+
+			longName(name)
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -205,15 +209,7 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
-	if param == "brad" {
-		param = "bradley"
-	}
-	if param == "nat" {
-		param = "natalie"
-	}
-	if param == "matt" {
-		param = "matthew"
-	}
+	longName(param)
 
 	param = strings.Title(param)
 
