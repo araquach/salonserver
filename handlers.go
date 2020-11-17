@@ -38,6 +38,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	var t, d, i string
 
+	var salonURL string
+
+	switch salon {
+	case 1:
+		salonURL = "https://www.jakatasalon.co.uk"
+	case 2:
+		salonURL = "https://www.paulkemphairdressing.com"
+	case 3:
+		salonURL = "https://www.basehairdressing.com"
+	}
+
 	vars := mux.Vars(r)
 	dir := vars["category"]
 	name := vars["name"]
@@ -54,27 +65,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
-		switch salon {
-		case 1:
-			i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + m.Slug + ".png"
-		case 2:
-			i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
-		case 3:
-			i = "https://www.basehairdressing.com/dist/img/fb_meta/" + m.Slug + ".png"
-		}
+		i = salonURL + "/dist/img/fb_meta/" + m.Slug + ".png"
 
 	} else if dir == "reviews" {
 		if name == "all" {
 			t = "Recent Reviews from our happy customers"
 			d = "The team receives consistently great reviews. Check them out here. You can filter by stylist too"
-			switch salon {
-			case 1:
-				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/reviews.png"
-			case 2:
-				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/reviews.png"
-			case 3:
-				i = "https://www.basehairdressing.com/dist/img/fb_meta/reviews.png"
-			}
+			i = salonURL + "/dist/img/fb_meta/reviews.png"
+
 		} else {
 			if name == "brad" {
 				name = "bradley"
@@ -94,15 +92,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 			t = param + " recently received this great review!"
 			d = r.Review
-
-			switch salon {
-			case 1:
-				i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + name + ".png"
-			case 2:
-				i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + name + ".png"
-			case 3:
-				i = "https://www.basehairdressing.com/dist/img/fb_meta/" + name + ".png"
-			}
+			i = salonURL + "/dist/img/fb_meta/" + name + ".png"
 		}
 
 	} else if dir == "blog" || dir == "blog-info" {
@@ -147,36 +137,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if m.Title != "" {
-				switch salon {
-				case 1:
-					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/" + m.Image + ".png"
-				case 2:
-					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/" + m.Image + ".png"
-				case 3:
-					i = "https://www.basehairdressing.com/dist/img/fb_meta/" + m.Image + ".png"
-				}
+				i = salonURL + "/dist/img/fb_meta/" + m.Image + ".png"
 			} else {
-				switch salon {
-				case 1:
-					i = "https://www.jakatasalon.co.uk/dist/img/fb_meta/home.png"
-				case 2:
-					i = "https://www.paulkemphairdressing.com/dist/img/fb_meta/home.png"
-				case 3:
-					i = "https://www.basehairdressing.com/dist/img/fb_meta/home.png"
-				}
+				i = salonURL + "/dist/img/fb_meta/home.png"
 			}
 		}
-	}
-
-	var salonUrl string
-
-	switch salon {
-	case 1:
-		salonUrl = "https://www.jakatasalon.co.uk/"
-	case 2:
-		salonUrl = "https://www.paulkemphairdressing.com/"
-	case 3:
-		salonUrl = "https://www.basehairdressing.com/"
 	}
 
 	path := path.Join(dir, name)
@@ -189,7 +154,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		"ogImage":       i,
 		"ogImageWidth":  "1200",
 		"ogImageHeight": "628",
-		"ogUrl":         salonUrl + path,
+		"ogUrl":         salonURL + "/" + path,
 		"version":       v,
 	}
 
