@@ -158,9 +158,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 		"version":       v,
 	}
 
-	fmt.Println(t)
-	fmt.Println(i)
-
 	if err := tpl.Execute(w, meta); err != nil {
 		panic(err)
 	}
