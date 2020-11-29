@@ -88,11 +88,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 		} else {
 			db := dbConn()
 			r := Review{}
+			longName(name)
 			param := strings.Title(name)
+
 			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 			db.Close()
-
-			longName(name)
 
 			t = param + " recently received this great review!"
 			d = r.Review
