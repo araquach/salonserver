@@ -31,7 +31,7 @@ func forceSsl(next http.Handler) http.Handler {
 	})
 }
 
-func longName(n string) {
+func longName(n string) (l string){
 	if n == "brad" {
 		n = "bradley"
 	}
@@ -41,6 +41,7 @@ func longName(n string) {
 	if n == "matt" {
 		n = "matthew"
 	}
+	return n
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -88,8 +89,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		} else {
 			db := dbConn()
 			r := Review{}
-			longName(name)
-			param := strings.Title(name)
+			ln := longName(name)
+			param := strings.Title(ln)
 
 			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 			db.Close()
@@ -209,9 +210,9 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
-	longName(param)
+	ln := longName(param)
 
-	param = strings.Title(param)
+	param = strings.Title(ln)
 
 	if param == "All" {
 		db := dbConn()
