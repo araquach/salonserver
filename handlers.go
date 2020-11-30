@@ -81,7 +81,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		i = salonURL + "/dist/img/fb_meta/" + m.Slug + ".png"
 
 	} else if dir == "reviews" {
-		if name == "all" {
+		if name == "" || name == "all" {
 			t = "Recent Reviews from our happy customers"
 			d = "The team receives consistently great reviews. Check them out here. You can filter by stylist too"
 			i = salonURL + "/dist/img/fb_meta/reviews.png"
