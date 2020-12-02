@@ -266,6 +266,26 @@ func apiSendMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiJoinus(w http.ResponseWriter, r *http.Request) {
+	var salonName, address string
+
+	switch salon {
+	case 1:
+		salonName = "Jakata"
+	case 2:
+		salonName = "PK"
+	case 3:
+		salonName = "Base"
+	}
+
+	switch salon {
+	case 1:
+		address = "info@jakatasalon.co.uk"
+	case 2:
+		address = "info@paulkemphairdressing.com"
+	case 3:
+		address = "info@basehairdressing.com"
+	}
+
 	decoder := json.NewDecoder(r.Body)
 
 	var data JoinusApplicant
@@ -279,8 +299,8 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
 
-	sender := "info@paulkemphairdressing.com"
-	subject := "New Job Applicant for PK"
+	sender := address
+	subject := "New" + data.Position + "Applicant for " + salonName
 	body := data.Info
 	recipient := "adam@jakatasalon.co.uk"
 
