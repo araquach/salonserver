@@ -300,7 +300,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
 
 	sender := address
-	subject := "New" + data.Position + "Applicant for " + salonName
+	subject := "New " + data.Role + " Applicant for " + salonName
 	body := data.Info
 	recipient := "adam@jakatasalon.co.uk"
 

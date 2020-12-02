@@ -14,6 +14,7 @@ type ContactMessage struct {
 type JoinusApplicant struct {
 	gorm.Model
 	Salon    uint   `json:"salon"`
+	Role     string `json:"role"`
 	Name     string `json:"name"`
 	Mobile   string `json:"mobile"`
 	Email    string `json:"email"`
@@ -32,22 +33,22 @@ type ModelApplicant struct {
 }
 
 type TeamMember struct {
-	ID          uint   `json:"id" gorm:"primary_key"`
-	Salon       uint   `json:"salon"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Level       uint   `json:"level"`
-	LevelName   string `json:"level_name"`
-	Image       string `json:"image"`
-	RemoteImage string `json:"remote_image"`
-	Para1       string `json:"para_1"`
-	Para2       string `json:"para_2"`
-	Para3       string `json:"para_3"`
-	FavStyle    string `json:"fav_style"`
-	Product     string `json:"product"`
+	ID          uint    `json:"id" gorm:"primary_key"`
+	Salon       uint    `json:"salon"`
+	FirstName   string  `json:"first_name"`
+	LastName    string  `json:"last_name"`
+	Level       uint    `json:"level"`
+	LevelName   string  `json:"level_name"`
+	Image       string  `json:"image"`
+	RemoteImage string  `json:"remote_image"`
+	Para1       string  `json:"para_1"`
+	Para2       string  `json:"para_2"`
+	Para3       string  `json:"para_3"`
+	FavStyle    string  `json:"fav_style"`
+	Product     string  `json:"product"`
 	Price       float64 `json:"price"`
-	Position    uint   `json:"position"`
-	Slug        string `json:"slug"`
+	Position    uint    `json:"position"`
+	Slug        string  `json:"slug"`
 }
 
 type Review struct {
@@ -75,7 +76,7 @@ type BookingRequest struct {
 	LastName  string `json:"last_name"`
 	Mobile    string `json:"mobile"`
 	Stylist   string `json:"stylist"`
-	TimeSlot string `json:"time_slot"`
+	TimeSlot  string `json:"time_slot"`
 }
 
 type Blog struct {
