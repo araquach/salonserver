@@ -59,6 +59,12 @@ func Serve(s int) {
 	r.HandleFunc("/api/blog-post/{slug}", apiBlogPost).Methods("GET")
 	r.HandleFunc("/api/blog-posts", apiBlogPosts).Methods("GET")
 	r.HandleFunc("/api/news-items", apiNewsItems).Methods("GET")
+	// priceCalc API
+	r.HandleFunc("/api/salons", apiSalons).Methods("GET")
+	r.HandleFunc("/api/stylists", apiStylists).Methods("GET")
+	r.HandleFunc("/api/levels", apiLevels).Methods("GET")
+	r.HandleFunc("/api/services", apiServices).Methods("GET")
+
 	r.HandleFunc("/{category}/{name}", home)
 	r.HandleFunc("/{name}", home)
 	r.HandleFunc("/", home)

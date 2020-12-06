@@ -459,3 +459,101 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(json)
 }
+
+func apiServices(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := dbConn()
+	defer db.Close()
+
+	p := []Service{}
+
+	db.Find(&p)
+
+	json, err := json.Marshal(p)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiStylists(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := dbConn()
+	defer db.Close()
+
+	s := []TeamMember{}
+
+	db.Find(&s)
+
+	json, err := json.Marshal(s)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiLevels(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := dbConn()
+	defer db.Close()
+
+	l := []Level{}
+
+	db.Find(&l)
+
+	json, err := json.Marshal(l)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiSalons(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	db := dbConn()
+	defer db.Close()
+
+	s := []Salon{}
+
+	db.Find(&s)
+
+	json, err := json.Marshal(s)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiSendQuoteDetails(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+
+	var data QuoteDetails
+	err := decoder.Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
+
+	sender := "info@basehairdressing.co.uk"
+	subject := "New Message for Base"
+	body := data.Info
+	recipient := data.Email
+
+	// The message object allows you to add attachments and Bcc recipients
+	message := mg.NewMessage(sender, subject, body, recipient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Send the message	with a 10 second timeout
+	resp, id, err := mg.Send(ctx, message)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+
+	return
+}
