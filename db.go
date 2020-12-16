@@ -67,8 +67,8 @@ func loadTeamMembers() {
 			}
 			salon, _ := strconv.Atoi(line[0])
 			level, _ := strconv.Atoi(line[3])
-			price, _ := strconv.ParseFloat(line[12], 8)
-			position, _ := strconv.Atoi(line[13])
+			price, _ := strconv.ParseFloat(line[13], 8)
+			position, _ := strconv.Atoi(line[14])
 
 			teamMembers = append(teamMembers, TeamMember{
 				Salon: uint(salon),
@@ -78,14 +78,15 @@ func loadTeamMembers() {
 				LevelName: line[4],
 				Image: line[5],
 				RemoteImage: line[6],
-				Para1: line[7],
-				Para2: line[8],
-				Para3: line[9],
-				FavStyle: line[10],
-				Product: line[11],
+				RemoteMontage: line[7],
+				Para1: line[8],
+				Para2: line[9],
+				Para3: line[10],
+				FavStyle: line[11],
+				Product: line[12],
 				Price: price,
 				Position: uint(position),
-				Slug: line[14],
+				Slug: line[15],
 			})
 		}
 	}
