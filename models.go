@@ -5,6 +5,30 @@ import (
 	"time"
 )
 
+type Salon struct {
+	Id       uint   `json:"id" gorm: "primary_key"`
+	Name     string `json:"name"`
+	Logo     string `json:"logo"`
+	Image    string `json:"image"`
+	Phone    string `json:"phone"`
+	Bookings string `json:"bookings"`
+}
+
+type Service struct {
+	Id      uint    `json:"id" gorm:"primary_key"`
+	Cat1    uint    `json:"cat1"`
+	Cat2    uint    `json:"cat2"`
+	Service string  `json:"service"`
+	Price   float64 `json:"price"`
+}
+
+type Level struct {
+	Id         uint   `json:"id" gorm:"primary_key"`
+	Name       string `json:"name"`
+	Adapter    int    `json:"adapter"`
+	ColAdapter int    `json:"col_adapter"`
+}
+
 type ContactMessage struct {
 	Name    string `json:"name"`
 	Email   string `json:"email"`
@@ -14,6 +38,7 @@ type ContactMessage struct {
 type JoinusApplicant struct {
 	gorm.Model
 	Salon    uint   `json:"salon"`
+	Role     string `json:"role"`
 	Name     string `json:"name"`
 	Mobile   string `json:"mobile"`
 	Email    string `json:"email"`
@@ -87,4 +112,11 @@ type Blog struct {
 	Intro  string `json:"intro"`
 	Body   string `json:"body"`
 	Author string `json:"author"`
+}
+
+type QuoteDetails struct {
+	Name   string `json:"name"`
+	Mobile string `json:"mobile"`
+	Email  string `json:"email"`
+	Info   string `json:"info"`
 }

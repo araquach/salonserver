@@ -25,11 +25,180 @@ func migrate() {
 	defer db.Close()
 	db.LogMode(true)
 
-	db.DropTableIfExists(&TeamMember{}, &MetaInfo{})
-	db.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{})
+	db.DropTableIfExists(&TeamMember{}, &MetaInfo{}, &Service{}, &Level{}, &Salon{})
+	db.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{})
 
+	loadSalons()
+	loadLevels()
+	loadServices()
 	loadTeamMembers()
 	loadMetaInfo()
+}
+
+func loadSalons() {
+	var err error
+	var salons []Salon
+	var files []string
+
+	db := dbConn()
+	db.LogMode(true)
+	defer db.Close()
+
+	root := "data/csv/salons"
+
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".csv" {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		csvFile, _ := os.Open(file)
+		reader := csv.NewReader(bufio.NewReader(csvFile))
+		for {
+			line, error := reader.Read()
+			if error == io.EOF {
+				break
+			} else if error != nil {
+				log.Fatal(error)
+			}
+			salons = append(salons, Salon{
+				Name: line[0],
+				Logo: line[1],
+				Image: line[2],
+				Phone: line[3],
+				Bookings: line[4],
+			})
+		}
+	}
+	for _, l := range salons {
+		db = dbConn()
+		db.LogMode(true)
+		db.Create(&l)
+		if err != nil {
+			log.Panic(err)
+		}
+		db.Close()
+	}
+}
+
+func loadLevels(){
+	var err error
+	var levels []Level
+	var files []string
+
+	db := dbConn()
+	db.LogMode(true)
+	defer db.Close()
+
+	root := "data/csv/levels"
+
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".csv" {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		csvFile, _ := os.Open(file)
+		reader := csv.NewReader(bufio.NewReader(csvFile))
+		for {
+			line, error := reader.Read()
+			if error == io.EOF {
+				break
+			} else if error != nil {
+				log.Fatal(error)
+			}
+
+			a, _ := strconv.Atoi(line[1])
+			c, _ := strconv.Atoi(line[2])
+
+			levels = append(levels, Level{
+				Name: line[0],
+				Adapter: a,
+				ColAdapter: c,
+			})
+		}
+	}
+	for _, l := range levels {
+		db = dbConn()
+		db.LogMode(true)
+		db.Create(&l)
+		if err != nil {
+			log.Panic(err)
+		}
+		db.Close()
+	}
+}
+
+func loadServices(){
+	var err error
+	var services []Service
+	var files []string
+
+	db := dbConn()
+	db.LogMode(true)
+	defer db.Close()
+
+	root := "data/csv/services"
+
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".csv" {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		csvFile, _ := os.Open(file)
+		reader := csv.NewReader(bufio.NewReader(csvFile))
+		for {
+			line, error := reader.Read()
+			if error == io.EOF {
+				break
+			} else if error != nil {
+				log.Fatal(error)
+			}
+			c1, _ := strconv.Atoi(line[0])
+			c2, _ := strconv.Atoi(line[1])
+			p, _ := strconv.ParseFloat(line[3], 8)
+			services = append(services, Service{
+				Cat1: uint(c1),
+				Cat2: uint(c2),
+				Service: line[2],
+				Price: p,
+			})
+		}
+	}
+	for _, s := range services {
+		db = dbConn()
+		db.LogMode(true)
+		db.Create(&s)
+		if err != nil {
+			log.Panic(err)
+		}
+		db.Close()
+	}
 }
 
 func loadTeamMembers() {
