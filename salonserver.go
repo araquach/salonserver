@@ -28,10 +28,6 @@ func Serve(s int) {
 
 	salon = s
 
-	if salon == 2 {
-		migrate()
-	}
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
