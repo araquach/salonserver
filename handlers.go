@@ -126,7 +126,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 		if m.Title != "" {
 			t = m.Title
 		} else {
-			t = "A New Standard of Hairdressing"
+			switch salon {
+			case 1:
+				t = "Fashion Forward Hairdressing"
+			case 2:
+				t = "A New Standard Of Hairdressing"
+			case 3:
+				t = "Academy for the next generation of super skilled stylists"
+			}
 		}
 
 		if m.Text != "" {
