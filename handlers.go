@@ -347,21 +347,31 @@ func apiModel(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-
+	var br BookingRequest
 	var data BookingRequest
-	err := decoder.Decode(&data)
-	if err != nil {
-		panic(err)
-	}
+	var error Error
 
 	db := dbConn()
-	db.Create(&data)
-	if err != nil {
-		panic(err)
+	defer db.Close()
+	db.Where("mobile", data.Mobile).First(&br)
+
+	if data.Mobile == br.Mobile {
+		error.Message = "You've already registered"
+		respondWithError(w, http.StatusBadRequest, error)
+		return
+	} else {
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&data)
+		if err != nil {
+			panic(err)
+		}
+
+		db.Create(&data)
+		if err != nil {
+			panic(err)
+		}
+		return
 	}
-	db.Close()
-	return
 }
 
 func apiBlogPost(w http.ResponseWriter, r *http.Request) {
@@ -563,4 +573,17 @@ func apiSendQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 
 	return
+}
+
+func respondWithError(w http.ResponseWriter, status int, error Error) {
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(error)
+}
+
+func responseJSON(w http.ResponseWriter, data interface{}) {
+	json.NewEncoder(w).Encode(data)
+}
+
+type Error struct {
+	Message string `json:"message"`
 }
