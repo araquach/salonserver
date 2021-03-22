@@ -353,7 +353,7 @@ func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
 
 	db := dbConn()
 	defer db.Close()
-	db.Where("mobile", data.Mobile).First(&br)
+	db.Where("mobile = ?", data.Mobile).First(&br)
 
 	if data.Mobile == br.Mobile {
 		error.Message = "You've already registered"
