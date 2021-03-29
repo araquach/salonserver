@@ -18,6 +18,10 @@ import (
 	"time"
 )
 
+type Response struct {
+	Message string `json:"message"`
+}
+
 func forceSsl(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("GO_ENV") == "production" {
@@ -29,6 +33,10 @@ func forceSsl(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func responseJSON(w http.ResponseWriter, data interface{}) {
+	json.NewEncoder(w).Encode(data)
 }
 
 func longName(n string) (l string){
@@ -347,20 +355,24 @@ func apiModel(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-
 	var data BookingRequest
-	err := decoder.Decode(&data)
-	if err != nil {
-		panic(err)
-	}
+	var br BookingRequest
+	var dbResponse Response
+
+	json.NewDecoder(r.Body).Decode(&data)
 
 	db := dbConn()
-	db.Create(&data)
-	if err != nil {
-		panic(err)
+	defer db.Close()
+
+	db.Where("mobile", data.Mobile).First(&br)
+
+	if data.Mobile == br.Mobile {
+		dbResponse.Message = "You've already registered! We'll be in touch soon"
+		responseJSON(w, dbResponse)
+		return
 	}
-	db.Close()
+
+	db.Create(&data)
 	return
 }
 
