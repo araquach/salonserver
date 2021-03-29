@@ -3,8 +3,9 @@ package salonserver
 import (
 	"bufio"
 	"encoding/csv"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"io"
 	"log"
 	"os"
@@ -12,20 +13,21 @@ import (
 	"strconv"
 )
 
-func dbConn() (db *gorm.DB) {
-	db, err := gorm.Open("postgres", os.Getenv("DATABASE_URL"))
+var db *gorm.DB
+
+func dbInit(dsn string) {
+	var err error
+
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
-	return db
 }
 
 func migrate() {
-	db := dbConn()
-	defer db.Close()
-	db.LogMode(true)
-
-	db.DropTableIfExists(&TeamMember{}, &MetaInfo{}, &Service{}, &Level{}, &Salon{})
+	db.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Service{}, &Level{}, &Salon{})
 	db.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{})
 
 	loadSalons()
@@ -39,10 +41,6 @@ func loadSalons() {
 	var err error
 	var salons []Salon
 	var files []string
-
-	db := dbConn()
-	db.LogMode(true)
-	defer db.Close()
 
 	root := "data/csv/salons"
 
@@ -79,13 +77,7 @@ func loadSalons() {
 		}
 	}
 	for _, l := range salons {
-		db = dbConn()
-		db.LogMode(true)
 		db.Create(&l)
-		if err != nil {
-			log.Panic(err)
-		}
-		db.Close()
 	}
 }
 
@@ -93,10 +85,6 @@ func loadLevels(){
 	var err error
 	var levels []Level
 	var files []string
-
-	db := dbConn()
-	db.LogMode(true)
-	defer db.Close()
 
 	root := "data/csv/levels"
 
@@ -135,13 +123,7 @@ func loadLevels(){
 		}
 	}
 	for _, l := range levels {
-		db = dbConn()
-		db.LogMode(true)
 		db.Create(&l)
-		if err != nil {
-			log.Panic(err)
-		}
-		db.Close()
 	}
 }
 
@@ -149,10 +131,6 @@ func loadServices(){
 	var err error
 	var services []Service
 	var files []string
-
-	db := dbConn()
-	db.LogMode(true)
-	defer db.Close()
 
 	root := "data/csv/services"
 
@@ -191,23 +169,13 @@ func loadServices(){
 		}
 	}
 	for _, s := range services {
-		db = dbConn()
-		db.LogMode(true)
 		db.Create(&s)
-		if err != nil {
-			log.Panic(err)
-		}
-		db.Close()
 	}
 }
 
 func loadTeamMembers() {
 	var err error
 	var teamMembers []TeamMember
-
-	db := dbConn()
-	db.LogMode(true)
-	db.Close()
 
 	var files []string
 
@@ -261,23 +229,13 @@ func loadTeamMembers() {
 	}
 
 	for _, m := range teamMembers {
-		db = dbConn()
-		db.LogMode(true)
 		db.Create(&m)
-		if err != nil {
-			log.Println(err)
-		}
-		db.Close()
 	}
 }
 
 func loadMetaInfo() {
 	var err error
 	var metaInfos []MetaInfo
-
-	db := dbConn()
-	db.LogMode(true)
-	db.Close()
 
 	var files []string
 
@@ -317,12 +275,6 @@ func loadMetaInfo() {
 	}
 
 	for _, m := range metaInfos {
-		db = dbConn()
-		db.LogMode(true)
 		db.Create(&m)
-		if err != nil {
-			log.Println(err)
-		}
-		db.Close()
 	}
 }

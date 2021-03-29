@@ -79,10 +79,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if dir == "team" || dir == "team-info" && len(name) > 0 {
-		db := dbConn()
 		m := TeamMember{}
 		db.Where("salon = ? AND slug = ?", salon, name).First(&m)
-		db.Close()
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
@@ -95,13 +93,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 			i = salonURL + "/dist/img/fb_meta/reviews.png"
 
 		} else {
-			db := dbConn()
 			r := Review{}
 			ln := longName(name)
 			param := strings.Title(ln)
 
 			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
-			db.Close()
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -126,10 +122,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		page := path.Join(dir, split)
 
-		db := dbConn()
 		m := MetaInfo{}
 		db.Where("salon = ?", salon).Where("page = ?", page).First(&m)
-		db.Close()
 
 		if m.Title != "" {
 			t = m.Title
@@ -188,10 +182,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 func apiTeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	db := dbConn()
 	team := []TeamMember{}
 	db.Where("salon = ?", salon).Order("position").Find(&team)
-	db.Close()
 
 	json, err := json.Marshal(team)
 	if err != nil {
@@ -206,10 +198,8 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	param := vars["slug"]
 
-	db := dbConn()
 	tm := TeamMember{}
 	db.Where("salon = ?", salon).Where("slug = ?", param).First(&tm)
-	db.Close()
 
 	json, err := json.Marshal(tm)
 	if err != nil {
@@ -230,13 +220,9 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	param = strings.Title(ln)
 
 	if param == "All" {
-		db := dbConn()
 		db.Where("salon = ?", salon).Find(&reviews)
-		db.Close()
 	} else {
-		db := dbConn()
 		db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Find(&reviews)
-		db.Close()
 	}
 
 	json, err := json.Marshal(reviews)
@@ -309,7 +295,6 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db := dbConn()
 	db.Create(&data)
 
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
@@ -346,11 +331,8 @@ func apiModel(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db := dbConn()
 	db.Create(&data)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	return
 }
 
@@ -360,9 +342,6 @@ func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
 	var dbResponse Response
 
 	json.NewDecoder(r.Body).Decode(&data)
-
-	db := dbConn()
-	defer db.Close()
 
 	db.Where("mobile", data.Mobile).First(&br)
 
@@ -481,10 +460,8 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 
 func apiServices(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	db := dbConn()
-	defer db.Close()
 
-	p := []Service{}
+	var p []Service
 
 	db.Find(&p)
 
@@ -497,10 +474,8 @@ func apiServices(w http.ResponseWriter, r *http.Request) {
 
 func apiStylists(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	db := dbConn()
-	defer db.Close()
 
-	s := []TeamMember{}
+	var s []TeamMember
 
 	db.Find(&s)
 
@@ -513,10 +488,8 @@ func apiStylists(w http.ResponseWriter, r *http.Request) {
 
 func apiLevels(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	db := dbConn()
-	defer db.Close()
 
-	l := []Level{}
+	var l []Level
 
 	db.Find(&l)
 
@@ -529,10 +502,8 @@ func apiLevels(w http.ResponseWriter, r *http.Request) {
 
 func apiSalons(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	db := dbConn()
-	defer db.Close()
 
-	s := []Salon{}
+	var s []Salon
 
 	db.Find(&s)
 
