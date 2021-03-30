@@ -6,7 +6,7 @@ import (
 )
 
 type Salon struct {
-	Id       uint   `json:"id" gorm:"primaryKey"`
+	Id       uint   `json:"id" gorm: "primary_key"`
 	Name     string `json:"name"`
 	Logo     string `json:"logo"`
 	Image    string `json:"image"`
@@ -15,7 +15,7 @@ type Salon struct {
 }
 
 type Service struct {
-	Id      uint    `json:"id" gorm:"primaryKey"`
+	Id      uint    `json:"id" gorm:"primary_key"`
 	Cat1    uint    `json:"cat1"`
 	Cat2    uint    `json:"cat2"`
 	Service string  `json:"service"`
@@ -23,7 +23,7 @@ type Service struct {
 }
 
 type Level struct {
-	Id         uint   `json:"id" gorm:"primaryKey"`
+	Id         uint   `json:"id" gorm:"primary_key"`
 	Name       string `json:"name"`
 	Adapter    int    `json:"adapter"`
 	ColAdapter int    `json:"col_adapter"`
@@ -57,7 +57,7 @@ type ModelApplicant struct {
 }
 
 type TeamMember struct {
-	ID            uint    `json:"id" gorm:"primaryKey"`
+	ID            uint    `json:"id" gorm:"primary_key"`
 	Salon         uint    `json:"salon"`
 	FirstName     string  `json:"first_name"`
 	LastName      string  `json:"last_name"`
@@ -77,7 +77,7 @@ type TeamMember struct {
 }
 
 type Review struct {
-	ID      uint      `json:"id" gorm:"primaryKey"`
+	ID      uint      `json:"id" gorm:"primary_key"`
 	Date    time.Time `json:"date"`
 	Salon   uint      `json:"salon"`
 	Review  string    `json:"review"`
@@ -86,7 +86,7 @@ type Review struct {
 }
 
 type MetaInfo struct {
-	ID    uint   `json:"id" gorm:"primaryKey"`
+	ID    uint   `json:"id" gorm:"primary_key"`
 	Salon uint   `json:"salon"`
 	Page  string `json:"page"`
 	Title string `json:"title"`
@@ -95,15 +95,13 @@ type MetaInfo struct {
 }
 
 type BookingRequest struct {
-	ID         uint   `json:"id" gorm:"primaryKey"`
-	Order      uint   `json:"order"`
-	Client     string `json:"client"`
-	Salon      uint   `json:"salon"`
-	Mobile     string `json:"mobile"`
-	Stylist    string `json:"stylist"`
-	TimeSlot   string `json:"time_slot"`
-	TopSpender uint   `json:"top_spender"`
-	Status     uint   `json:"status"`
+	ID        uint   `json:"id" gorm: "primary_key"`
+	Salon     uint   `json:"salon"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Mobile    string `json:"mobile"`
+	Stylist   string `json:"stylist"`
+	TimeSlot  string `json:"time_slot"`
 }
 
 type Blog struct {
