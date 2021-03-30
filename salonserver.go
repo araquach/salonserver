@@ -26,6 +26,9 @@ func Serve(s int) {
 	var err error
 	var dir string
 
+	dsn := os.Getenv("DATABASE_URL")
+	dbInit(dsn)
+
 	salon = s
 
 	port := os.Getenv("PORT")
