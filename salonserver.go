@@ -29,6 +29,8 @@ func Serve(s int) {
 	dsn := os.Getenv("DATABASE_URL")
 	dbInit(dsn)
 
+	db.AutoMigrate(&BookingRequest{})
+
 	salon = s
 
 	port := os.Getenv("PORT")
