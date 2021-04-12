@@ -273,7 +273,6 @@ func loadMetaInfo() {
 			})
 		}
 	}
-
 	for _, m := range metaInfos {
 		db.Create(&m)
 	}

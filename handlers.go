@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mailgun/mailgun-go/v3"
 	"github.com/russross/blackfriday"
+	"github.com/textmagic/textmagic-rest-go"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -39,7 +40,7 @@ func responseJSON(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func longName(n string) (l string){
+func longName(n string) (l string) {
 	if n == "brad" {
 		n = "bradley"
 	}
@@ -350,8 +351,11 @@ func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
 		responseJSON(w, dbResponse)
 		return
 	}
-
 	db.Create(&data)
+
+	sm := getStaffMobile()
+
+	sendSms(sm[data.Stylist])
 	return
 }
 
@@ -546,4 +550,52 @@ func apiSendQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 
 	return
+}
+
+func getStaffMobile() map[string]string {
+	s := make(map[string]string)
+
+	s["Nat"] = "+447975690833"
+	s["Georgia"] = "+447713452458"
+	s["Matt"] = "+447378420023"
+	s["Abbi"] = "+447960892938"
+	s["Lauren-T"] = "+447534193140"
+	s["Vikki"] = "+447833248653"
+	s["Layla"] = "+447494187775"
+	s["Laura"] = "+447989786237"
+	s["Kellie"] = "+447805093942"
+	s["Izzy"] = "+447817722920"
+	s["Jo"] = "+447710408166"
+	s["Abi"] = "+447388033659"
+	s["Brad"] = "+447762329249"
+	s["David"] = "+447539685042"
+	s["Michelle"] = "+447714263500"
+	s["Adam"] = "+447921806884"
+	s["Jimmy"] = "+447939011951"
+	s["Lauren-W"] = "+447984334430"
+	s["Lucy"] = "+447432522388"
+	s["Sophie"] = "+447793046731"
+	s["Beth"] = "+447432094293"
+	s["Ruby"] = "+447808034791"
+	s["Jak Not Sure"] = "+447921806884"
+	s["PK Not Sure"] = "+447921806884"
+	s["B Not Sure"] = "+447921806884"
+
+	return s
+}
+
+func sendSms(n string) {
+	client := textmagic.NewClient("adamcarter3", "s66tZKiQuVk2BkrdAcPuSFIYGSUMae")
+
+	params := map[string]string{
+		"phones": n,
+		"text":   "A new client has registered with you!",
+	}
+	message, err := client.CreateMessage(params)
+
+	if err != nil {
+		log.Print(err)
+	} else {
+		log.Print(message.ID)
+	}
 }

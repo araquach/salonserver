@@ -6,7 +6,7 @@ import (
 )
 
 type Salon struct {
-	Id       uint   `json:"id" gorm: "primary_key"`
+	Id       uint   `json:"id" gorm:"primaryKey"`
 	Name     string `json:"name"`
 	Logo     string `json:"logo"`
 	Image    string `json:"image"`
