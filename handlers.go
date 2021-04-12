@@ -585,7 +585,7 @@ func getStaffMobile() map[string]string {
 }
 
 func sendSms(n string) {
-	client := textmagic.NewClient("adamcarter3", "s66tZKiQuVk2BkrdAcPuSFIYGSUMae")
+	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
 
 	params := map[string]string{
 		"phones": n,
