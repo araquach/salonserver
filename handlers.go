@@ -23,6 +23,12 @@ type Response struct {
 	Message string `json:"message"`
 }
 
+type tm struct {
+	name string
+	mobile string
+	link string
+}
+
 func forceSsl(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("GO_ENV") == "production" {
@@ -353,9 +359,7 @@ func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	db.Create(&data)
 
-	sm := getStaffMobile()
-
-	sendSms(sm[data.Stylist])
+	sendSms(data.Stylist)
 	return
 }
 
@@ -552,50 +556,59 @@ func apiSendQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func getStaffMobile() map[string]string {
-	s := make(map[string]string)
-
-	s["Nat"] = "+447975690833"
-	s["Georgia"] = "+447713452458"
-	s["Matt"] = "+447378420023"
-	s["Abbi"] = "+447960892938"
-	s["Lauren-T"] = "+447534193140"
-	s["Vikki"] = "+447833248653"
-	s["Layla"] = "+447494187775"
-	s["Laura"] = "+447989786237"
-	s["Kellie"] = "+447805093942"
-	s["Izzy"] = "+447817722920"
-	s["Jo"] = "+447710408166"
-	s["Abi"] = "+447388033659"
-	s["Brad"] = "+447762329249"
-	s["David"] = "+447539685042"
-	s["Michelle"] = "+447714263500"
-	s["Adam"] = "+447921806884"
-	s["Jimmy"] = "+447939011951"
-	s["Lauren-W"] = "+447984334430"
-	s["Lucy"] = "+447432522388"
-	s["Sophie"] = "+447793046731"
-	s["Beth"] = "+447432094293"
-	s["Ruby"] = "+447808034791"
-	s["Jak Not Sure"] = "+447921806884"
-	s["PK Not Sure"] = "+447921806884"
-	s["B Not Sure"] = "+447921806884"
-
-	return s
-}
-
 func sendSms(n string) {
+	var name, mobile, link string
+
 	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
 
+	tm1 := tm{"Nat", "+447975690833", "12564"}
+	tm2 := tm{"Georgia", "+447713452458", "13789"}
+	tm3 := tm{"Matt", "+447378420023", "58839"}
+	tm4 := tm{"Abbi", "+447960892938", "28509"}
+	tm5 := tm{"Lauren-T", "+447534193140", "08348"}
+	tm6 := tm{"Vikki", "+447833248653", "46748"}
+	tm7 := tm{"Layla", "+447494187775", "35688"}
+	tm8 := tm{"Laura", "+447989786237", "48938"}
+	tm9 := tm{"Kellie", "+447805093942", "24389"}
+	tm10 := tm{"Izzy", "+447817722920", "88453"}
+	tm11 := tm{"Jo", "+447710408166", "23675"}
+	tm12 := tm{"Abi", "+447388033659", "46347"}
+	tm13 := tm{"Brad", "+447762329249", "34765"}
+	tm14 := tm{"David", "+447539685042", "73834"}
+	tm15 := tm{"Michelle", "+447714263500", "35278"}
+	tm16 := tm{"Adam", "+447921806884", "45765"}
+	tm17 := tm{"Jimmy", "+447939011951", "57833"}
+	tm18 := tm{"Lauren-W", "+447984334430", "87648"}
+	tm19 := tm{"Lucy", "+447432522388", "78598"}
+	tm20 := tm{"Sophie", "+447793046731", "45748"}
+	tm21 := tm{"Beth", "+447432094293", "68388"}
+	tm22 := tm{"Ruby", "+447808034791", "32673"}
+	tm23 := tm{"Jak Not Sure", "+447921806884", "98761"}
+	tm24 := tm{"PK Not Sure", "+447921806884", "98762"}
+	tm25 := tm{"B Not Sure", "+447921806884", "98763"}
+
+	tms := []tm{tm1, tm2, tm3, tm4, tm5, tm6, tm7, tm8, tm9, tm10, tm11, tm12, tm13, tm14, tm15, tm16, tm17, tm18, tm19, tm20, tm21, tm22, tm23, tm24, tm25}
+
+	for _, v := range tms {
+		if n == v.name {
+			name = v.name
+			mobile = v.mobile
+			link = v.link
+		}
+	}
+
+	m := mobile
+	t := "Hi " + name + ", a new client has registered with you! https://fast-basin-93128.herokuapp.com/" + link
+
 	params := map[string]string{
-		"phones": n,
-		"text":   "A new client has registered with you!",
+		"phones": m,
+		"text":   t,
 	}
 	message, err := client.CreateMessage(params)
 
 	if err != nil {
-		log.Print(err)
+		fmt.Println(err)
 	} else {
-		log.Print(message.ID)
+		fmt.Println(message.ID)
 	}
 }
