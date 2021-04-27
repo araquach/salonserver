@@ -2,6 +2,7 @@ package salonserver
 
 import (
 	"github.com/jinzhu/gorm"
+	"gorm.io/datatypes"
 	"time"
 )
 
@@ -114,9 +115,10 @@ type Blog struct {
 	Author string `json:"author"`
 }
 
-type QuoteDetails struct {
-	Name   string `json:"name"`
-	Mobile string `json:"mobile"`
-	Email  string `json:"email"`
-	Info   string `json:"info"`
+type QuoteRespondent struct {
+	ID     uint           `json:"id" gorm:"primaryKey"`
+	Name   string         `json:"name"`
+	Mobile string         `json:"mobile"`
+	Email  string         `json:"email"`
+	Quote  datatypes.JSON `json:"quote"`
 }
