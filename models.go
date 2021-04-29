@@ -117,7 +117,7 @@ type Blog struct {
 
 type QuoteRespondent struct {
 	ID      uint           `json:"id" gorm:"primaryKey"`
-	SalonID uint           `json:"salonID"`
+	SalonID uint           `json:"salon_id"`
 	Name    string         `json:"name"`
 	Mobile  string         `json:"mobile"`
 	Email   string         `json:"email"`
