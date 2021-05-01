@@ -63,7 +63,7 @@ func Serve(s int) {
 	r.HandleFunc("/api/stylists", apiStylists).Methods("GET")
 	r.HandleFunc("/api/levels", apiLevels).Methods("GET")
 	r.HandleFunc("/api/services", apiServices).Methods("GET")
-	r.HandleFunc("/api/get-quote-details/{id}", apiGetQuoteDetails).Methods("GET")
+	r.HandleFunc("/api/get-quote-details/{link}", apiGetQuoteDetails).Methods("GET")
 	r.HandleFunc("/prices/api/send-quote-details", apiSaveQuoteDetails).Methods("POST")
 
 	r.HandleFunc("/{category}/{name}", home)

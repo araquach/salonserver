@@ -541,9 +541,9 @@ func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	var services QuoteRespondent
 
 	vars := mux.Vars(r)
-	param := vars["id"]
+	param := vars["link"]
 
-	db.Where("id", param).First(&services)
+	db.Where("link", param).First(&services)
 
 	json, err := json.Marshal(services)
 	if err != nil {
