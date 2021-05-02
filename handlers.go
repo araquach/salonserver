@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -526,14 +527,20 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	var salonURL string
+	var salonName string
 	var data QuoteRespondent
 
-	switch data.SalonID {
+	sID, _ := strconv.Atoi(string(data.SalonID))
+
+	switch  sID {
 	case 1:
+		salonName = "Jakata Salon"
 		salonURL = "https://www.jakatasalon.co.uk/"
 	case 2:
+		salonName = "Paul Kemp Hairdressing"
 		salonURL = "https://www.paulkemphairdressing.com/"
 	case 3:
+		salonName = "Base Hairdressing"
 		salonURL = "https://www.basehairdressing.com/"
 	}
 
@@ -548,7 +555,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	name := strings.Split(data.Name, " ")[0]
 	mobile := data.Mobile
 	link := data.Link
-	t := "Hi " + name + ", Here's a link to your quote: " + salonURL + link
+	t := "Hi " + name + ", Here's a link to your quote at " + salonName + ": " + salonURL + "quote/" + link
 
 	params := map[string]string{
 		"phones": "+44" + mobile[1:],
