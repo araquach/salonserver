@@ -15,7 +15,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -530,9 +529,16 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	var salonName string
 	var data QuoteRespondent
 
-	sID, _ := strconv.Atoi(string(data.SalonID))
+	err := decoder.Decode(&data)
+	if err != nil {
+		panic(err)
+	}
 
-	switch  sID {
+	db.Create(&data)
+
+	sID := data.SalonID
+
+	switch sID {
 	case 1:
 		salonName = "Jakata Salon"
 		salonURL = "https://www.jakatasalon.co.uk/"
@@ -543,13 +549,6 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		salonName = "Base Hairdressing"
 		salonURL = "https://www.basehairdressing.com/"
 	}
-
-	err := decoder.Decode(&data)
-	if err != nil {
-		panic(err)
-	}
-
-	db.Create(&data)
 
 	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
 	name := strings.Split(data.Name, " ")[0]
