@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -525,7 +526,17 @@ func apiSalons(w http.ResponseWriter, r *http.Request) {
 func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
+	var salonURL string
 	var data QuoteRespondent
+
+	switch salon {
+	case 1:
+		salonURL = "https://www.jakatasalon.co.uk/"
+	case 2:
+		salonURL = "https://www.paulkemphairdressing.com/"
+	case 3:
+		salonURL = "https://www.basehairdressing.com/"
+	}
 
 	err := decoder.Decode(&data)
 	if err != nil {
@@ -533,6 +544,24 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.Create(&data)
+
+	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
+	name := strings.Split(data.Name, " ")[0]
+	mobile := data.Mobile
+	link := data.Link
+	salonURL = strconv.Itoa(int(data.SalonID))
+	t := "Hi " + name + ", Here's a link to your quote: " + salonURL + link
+
+	params := map[string]string{
+		"phones": mobile,
+		"text":   t,
+	}
+	message, err := client.CreateMessage(params)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(message.ID)
+	}
 }
 
 func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
@@ -635,7 +664,6 @@ func sendSms(n string) {
 		"text":   t,
 	}
 	message, err := client.CreateMessage(params)
-
 	if err != nil {
 		fmt.Println(err)
 	} else {
