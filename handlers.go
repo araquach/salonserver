@@ -553,9 +553,10 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	t := "Hi " + name + ", Here's a link to your quote: " + salonURL + link
 
 	params := map[string]string{
-		"phones": mobile,
+		"phones": "+44" + mobile[1:],
 		"text":   t,
 	}
+
 	message, err := client.CreateMessage(params)
 	if err != nil {
 		fmt.Println(err)
