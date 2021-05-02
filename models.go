@@ -116,10 +116,12 @@ type Blog struct {
 }
 
 type QuoteRespondent struct {
-	ID      uint           `json:"id" gorm:"primaryKey"`
-	SalonID uint           `json:"salon_id"`
-	Name    string         `json:"name"`
-	Mobile  string         `json:"mobile"`
-	Email   string         `json:"email"`
-	Quote   datatypes.JSON `json:"quote"`
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	Link      string         `json:"link"`
+	CreatedAt time.Time      `json:"created_at"`
+	SalonID   uint           `json:"salon_id"`
+	Name      string         `json:"name"`
+	Mobile    string         `json:"mobile"`
+	Email     string         `json:"email"`
+	Quote     datatypes.JSON `json:"quote"`
 }
