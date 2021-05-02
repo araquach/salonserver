@@ -15,7 +15,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -529,7 +528,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	var salonURL string
 	var data QuoteRespondent
 
-	switch salon {
+	switch data.SalonID {
 	case 1:
 		salonURL = "https://www.jakatasalon.co.uk/"
 	case 2:
@@ -549,7 +548,6 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	name := strings.Split(data.Name, " ")[0]
 	mobile := data.Mobile
 	link := data.Link
-	salonURL = strconv.Itoa(int(data.SalonID))
 	t := "Hi " + name + ", Here's a link to your quote: " + salonURL + link
 
 	params := map[string]string{
