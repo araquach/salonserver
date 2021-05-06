@@ -536,7 +536,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 
 	db.Create(&data)
 
-	sID := data.SalonID
+	sID := data.StylistSalonID
 
 	switch sID {
 	case 1:
@@ -585,40 +585,6 @@ func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(json)
 }
-
-//func apiSendQuoteDetails(w http.ResponseWriter, r *http.Request) {
-//	decoder := json.NewDecoder(r.Body)
-//
-//	var data QuoteDetails
-//	err := decoder.Decode(&data)
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
-//
-//	sender := "info@basehairdressing.co.uk"
-//	subject := "New Message for Base"
-//	body := data.Info
-//	recipient := data.Email
-//
-//	// The message object allows you to add attachments and Bcc recipients
-//	message := mg.NewMessage(sender, subject, body, recipient)
-//
-//	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-//	defer cancel()
-//
-//	// Send the message	with a 10 second timeout
-//	resp, id, err := mg.Send(ctx, message)
-//
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	fmt.Printf("ID: %s Resp: %s\n", id, resp)
-//
-//	return
-//}
 
 func sendSms(n string) {
 	var name, mobile, link string
