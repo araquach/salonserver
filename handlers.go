@@ -530,6 +530,8 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	var salonEmail string
 	var data QuoteRespondent
 
+	var quote map[string]string
+
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
@@ -572,17 +574,23 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(message.ID)
 	}
 
-	htmlContent, err := ParseEmailTemplate("templates/base/quote.html", nil)
+	err = json.Unmarshal(data.Quote, &quote)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	htmlContent, err := ParseEmailTemplate("templates/base/quote.html", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Println(htmlContent)
 
-	textContent, err := ParseEmailTemplate("templates/base/quote.txt", nil)
+	textContent, err := ParseEmailTemplate("templates/base/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Println(textContent)
+	fmt.Println(quote)
 
 	mg := mailgun.NewMailgun("jakatasalon.co.uk", "key-7bdc914427016c8714ed8ef2108a5a49")
 
