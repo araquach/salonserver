@@ -527,6 +527,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 
 	var salonURL string
 	var salonName string
+	var salonEmail string
 	var data QuoteRespondent
 
 	err := decoder.Decode(&data)
@@ -542,12 +543,15 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	case 1:
 		salonName = "Jakata Salon"
 		salonURL = "https://www.jakatasalon.co.uk/"
+		salonEmail = "info@jakatasalon.co.uk"
 	case 2:
 		salonName = "Paul Kemp Hairdressing"
 		salonURL = "https://www.paulkemphairdressing.com/"
+		salonEmail = "info@paulkemphairdressing.com"
 	case 3:
 		salonName = "Base Hairdressing"
 		salonURL = "https://www.basehairdressing.com/"
+		salonEmail = "info@basehairdressing.com"
 	}
 
 	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
@@ -567,6 +571,41 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Println(message.ID)
 	}
+
+	htmlContent, err := ParseEmailTemplate("templates/base/quote.html", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(htmlContent)
+
+	textContent, err := ParseEmailTemplate("templates/base/quote.txt", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(textContent)
+
+	mg := mailgun.NewMailgun("jakatasalon.co.uk", "key-7bdc914427016c8714ed8ef2108a5a49")
+
+	sender := salonEmail
+	subject := "Your quote for " + salonName
+	body := textContent
+	recipient := data.Email
+
+	m := mg.NewMessage(sender, subject, body, recipient)
+
+	m.SetHtml(htmlContent)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Send the message	with a 10 second timeout
+	resp, id, err := mg.Send(ctx, m)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 }
 
 func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
