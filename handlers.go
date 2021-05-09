@@ -529,8 +529,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	var salonName string
 	var salonEmail string
 	var data QuoteRespondent
-
-	var quote map[string]string
+	var quote QuoteInfo
 
 	err := decoder.Decode(&data)
 	if err != nil {

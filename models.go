@@ -126,3 +126,15 @@ type QuoteRespondent struct {
 	Email          string         `json:"email"`
 	Quote          datatypes.JSON `json:"quote"`
 }
+
+type QuoteInfo struct {
+	Services []struct {
+		Price   float64 `json:"price"`
+		Service string  `json:"service"`
+	} `json:"services"`
+	Stylist struct {
+		Image string `json:"image"`
+		Name  string `json:"name"`
+	} `json:"stylist"`
+	Total float64 `json:"total"`
+}
