@@ -139,5 +139,5 @@ type QuoteInfo struct {
 	} `json:"stylist"`
 	Total    float64 `json:"total"`
 	Discount float64 `json:"discount"`
-	Regular bool `json:"regular"`
+	Regular  bool    `json:"regular"`
 }
