@@ -137,4 +137,5 @@ type QuoteInfo struct {
 		Name  string `json:"name"`
 	} `json:"stylist"`
 	Total float64 `json:"total"`
+	Discount float64 `json:"discount"`
 }
