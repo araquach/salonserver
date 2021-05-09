@@ -579,6 +579,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	quote.Discount = quote.Total * .8
+	quote.Regular = data.Regular
 
 	htmlContent, err := ParseEmailTemplate("templates/base/quote.html", quote)
 	if err != nil {
