@@ -525,9 +525,7 @@ func apiSalons(w http.ResponseWriter, r *http.Request) {
 func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var salonURL string
-	var salonName string
-	var salonEmail string
+	var salonURL, salonName, salonEmail, tplFolder string
 	var data QuoteRespondent
 	var quote QuoteInfo
 
@@ -545,14 +543,17 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		salonName = "Jakata Salon"
 		salonURL = "https://www.jakatasalon.co.uk/"
 		salonEmail = "info@jakatasalon.co.uk"
+		tplFolder = "jakata"
 	case 2:
 		salonName = "Paul Kemp Hairdressing"
 		salonURL = "https://www.paulkemphairdressing.com/"
 		salonEmail = "info@paulkemphairdressing.com"
+		tplFolder = "pk"
 	case 3:
 		salonName = "Base Hairdressing"
 		salonURL = "https://www.basehairdressing.com/"
 		salonEmail = "info@basehairdressing.com"
+		tplFolder = "base"
 	}
 
 	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
@@ -585,12 +586,12 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	quote.Discount = quote.Total * .8
 	quote.Expires = formatted
 
-	htmlContent, err := ParseEmailTemplate("templates/base/quote.gohtml", quote)
+	htmlContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.gohtml", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	textContent, err := ParseEmailTemplate("templates/base/quote.txt", quote)
+	textContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
