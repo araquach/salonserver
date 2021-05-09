@@ -586,6 +586,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 	fmt.Println(htmlContent)
+	fmt.Println(data.Regular)
 
 	textContent, err := ParseEmailTemplate("templates/base/quote.txt", quote)
 	if err != nil {
