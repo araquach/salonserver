@@ -578,21 +578,22 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 
-	quote.Discount = quote.Total * .8
+	now := time.Now()
+	month := now.AddDate(0, 0, 7 * 4)
+	formatted := month.Format("02/01/2006")
 
-	htmlContent, err := ParseEmailTemplate("templates/base/quote.html", quote)
+	quote.Discount = quote.Total * .8
+	quote.Expires = formatted
+
+	htmlContent, err := ParseEmailTemplate("templates/base/quote.gohtml", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(htmlContent)
-	fmt.Println(data.Regular)
 
 	textContent, err := ParseEmailTemplate("templates/base/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(textContent)
-	fmt.Println(quote)
 
 	mg := mailgun.NewMailgun("jakatasalon.co.uk", "key-7bdc914427016c8714ed8ef2108a5a49")
 
