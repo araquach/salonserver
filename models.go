@@ -47,7 +47,6 @@ type JoinusApplicant struct {
 	About    string `json:"about"`
 	WhyHair  string `json:"why_hair"`
 	WhyUs    string `json:"why_us"`
-	Info     string `gorm:"-" json:"info"`
 }
 
 type ModelApplicant struct {

@@ -279,18 +279,12 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	switch salon {
 	case 1:
 		salonName = "Jakata"
-	case 2:
-		salonName = "PK"
-	case 3:
-		salonName = "Base"
-	}
-
-	switch salon {
-	case 1:
 		address = "info@jakatasalon.co.uk"
 	case 2:
+		salonName = "PK"
 		address = "info@paulkemphairdressing.com"
 	case 3:
+		salonName = "Base"
 		address = "info@basehairdressing.com"
 	}
 
@@ -304,29 +298,38 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	db.Create(&data)
 
+	htmlContent, err := ParseEmailTemplate("templates/recruitment.gohtml", data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	textContent, err := ParseEmailTemplate("templates/recruitment.txt", data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
 
 	sender := address
 	subject := "New " + data.Role + " Applicant for " + salonName
-	body := data.Info
+	body := textContent
 	recipient := "adam@jakatasalon.co.uk"
 
-	// The message object allows you to add attachments and Bcc recipients
-	message := mg.NewMessage(sender, subject, body, recipient)
+	m := mg.NewMessage(sender, subject, body, recipient)
+
+	m.SetHtml(htmlContent)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	// Send the message	with a 10 second timeout
-	resp, id, err := mg.Send(ctx, message)
+	resp, id, err := mg.Send(ctx, m)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
-
-	return
 }
 
 func apiModel(w http.ResponseWriter, r *http.Request) {
@@ -596,7 +599,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 
-	mg := mailgun.NewMailgun("jakatasalon.co.uk", "key-7bdc914427016c8714ed8ef2108a5a49")
+	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
 
 	sender := salonEmail
 	subject := "Your quote for " + salonName
