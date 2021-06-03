@@ -313,7 +313,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	sender := address
 	subject := "New " + data.Role + " Applicant for " + salonName
 	body := textContent
-	recipient := "adam@jakatasalon.co.uk"
+	recipient := "adam@jakatasalon.co.uk, araquach@yahoo.co.uk"
 
 	m := mg.NewMessage(sender, subject, body, recipient)
 
