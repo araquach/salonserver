@@ -139,5 +139,6 @@ type QuoteInfo struct {
 	Total    float64 `json:"total"`
 	Discount float64 `json:"discount"`
 	Regular  bool    `json:"regular"`
-	Expires  string
+	Expires  string `json:"expires"`
+	Status int `json:"status"`
 }
