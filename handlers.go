@@ -528,7 +528,7 @@ func apiSalons(w http.ResponseWriter, r *http.Request) {
 func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var salonURL, salonName, salonEmail, TMUser, TMPassword, tplFolder string
+	var salonURL, salonName, salonEmail, tplFolder string
 	var data QuoteRespondent
 	var quote QuoteInfo
 
@@ -546,26 +546,20 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		salonName = "Jakata Salon"
 		salonURL = "https://www.jakatasalon.co.uk/"
 		salonEmail = "info@jakatasalon.co.uk"
-		TMUser = os.Getenv("TM_USERNAME_JAKATA")
-		TMPassword = os.Getenv("TM_PASSWORD_JAKATA")
 		tplFolder = "jakata"
 	case 2:
 		salonName = "Paul Kemp Hairdressing"
 		salonURL = "https://www.paulkemphairdressing.com/"
 		salonEmail = "info@paulkemphairdressing.com"
-		TMUser = os.Getenv("TM_USERNAME_PK")
-		TMPassword = os.Getenv("TM_PASSWORD_PK")
 		tplFolder = "pk"
 	case 3:
 		salonName = "Base Hairdressing"
 		salonURL = "https://www.basehairdressing.com/"
 		salonEmail = "info@basehairdressing.com"
-		TMUser = os.Getenv("TM_USERNAME_BASE")
-		TMPassword = os.Getenv("TM_PASSWORD_BASE")
 		tplFolder = "base"
 	}
 
-	client := textmagic.NewClient(TMUser, TMPassword)
+	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_PASSWORD"))
 	name := strings.Split(data.Name, " ")[0]
 	mobile := data.Mobile
 	link := data.Link
