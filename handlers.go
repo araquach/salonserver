@@ -559,7 +559,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		tplFolder = "base"
 	}
 
-	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_PASSWORD"))
+	client := textmagic.NewClient(os.Getenv("TEXT_MAGIC_USERNAME"), os.Getenv("TEXT_MAGIC_TOKEN"))
 	name := strings.Split(data.Name, " ")[0]
 	mobile := data.Mobile
 	link := data.Link
