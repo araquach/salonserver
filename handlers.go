@@ -370,20 +370,32 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var blog Blog
+	var fn string
 
 	params := mux.Vars(r)
 
-	data, err := ioutil.ReadFile("blog/" + params["slug"] + ".txt")
+	files, err := ioutil.ReadDir("files")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range files {
+		if strings.Contains(f.Name(), params["slug"]) {
+			fn = f.Name()
+		}
+	}
+
+	data, err := ioutil.ReadFile(fn)
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return
 	}
 	lines := strings.Split(string(data), "\n")
-	title := string(lines[0])
-	date := string(lines[1])
-	author := string(lines[2])
-	image := string(lines[3])
-	intro := string(lines[6])
+	title := lines[0]
+	date := lines[1]
+	author := lines[2]
+	image := lines[3]
+	intro := lines[6]
 	text := strings.Join(lines[6:], "\n")
 	body := blackfriday.MarkdownBasic([]byte(text))
 	slug := params["slug"]
