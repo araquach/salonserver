@@ -374,7 +374,7 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	files, err := ioutil.ReadDir("files")
+	files, err := ioutil.ReadDir("blog")
 	if err != nil {
 		log.Fatal(err)
 	}
