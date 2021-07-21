@@ -385,7 +385,7 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := ioutil.ReadFile(fn)
+	data, err := ioutil.ReadFile("blogs/" + fn)
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return
