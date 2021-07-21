@@ -118,12 +118,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, f := range files {
-			if strings.Contains(f.Name(), name) {
+			if strings.Contains(f.Name(), page) {
 				fn = f.Name()
 			}
 		}
 
-		data, err := ioutil.ReadFile("blog" + fn + ".txt")
+		data, err := ioutil.ReadFile("blog/" + fn + ".txt")
 		if err != nil {
 			fmt.Println(err)
 			return
