@@ -118,7 +118,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, f := range files {
-			if strings.Contains(f.Name(), page) {
+			if strings.Contains(f.Name(), name) {
 				fn = f.Name()
 			}
 		}
