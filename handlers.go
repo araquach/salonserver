@@ -64,7 +64,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Generate version number for scripts and css
 	rand.Seed(time.Now().UnixNano())
 
-	var t, d, i string
+	var t, d, i, fn string
 
 	var salonURL string
 
@@ -112,9 +112,18 @@ func home(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else if dir == "blog" || dir == "blog-info" {
-		path := path.Join(dir, name)
+		files, err := ioutil.ReadDir("blog")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		data, err := ioutil.ReadFile(path + ".txt")
+		for _, f := range files {
+			if strings.Contains(f.Name(), name) {
+				fn = f.Name()
+			}
+		}
+
+		data, err := ioutil.ReadFile("blog" + fn + ".txt")
 		if err != nil {
 			fmt.Println(err)
 			return
