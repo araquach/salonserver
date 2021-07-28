@@ -123,7 +123,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		data, err := ioutil.ReadFile("blog/" + fn + ".txt")
+		data, err := ioutil.ReadFile("blog/" + fn)
 		if err != nil {
 			fmt.Println(err)
 			return
