@@ -1,11 +1,9 @@
-package salonserver
+package db
 
 import (
 	"bufio"
 	"encoding/csv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/araquach/salonserver"
 	"io"
 	"log"
 	"os"
@@ -13,33 +11,20 @@ import (
 	"strconv"
 )
 
-var db *gorm.DB
-
-func dbInit(dsn string) {
-	var err error
-
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
-func migrate() {
-	db.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Service{}, &Level{}, &Salon{})
-	db.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{})
+func Migrate() {
+	DB.Migrator().DropTable(&salonserver.TeamMember{}, &salonserver.MetaInfo{}, &salonserver.Level{}, &salonserver.Salon{})
+	DB.AutoMigrate(&salonserver.TeamMember{}, &salonserver.MetaInfo{}, &salonserver.JoinusApplicant{}, &salonserver.ModelApplicant{}, &salonserver.Review{}, &salonserver.BookingRequest{}, &salonserver.Service{}, &salonserver.Level{}, &salonserver.Salon{})
 
 	loadSalons()
 	loadLevels()
-	loadServices()
+	// loadServices()
 	loadTeamMembers()
 	loadMetaInfo()
 }
 
 func loadSalons() {
 	var err error
-	var salons []Salon
+	var salons []salonserver.Salon
 	var files []string
 
 	root := "data/csv/salons"
@@ -67,23 +52,23 @@ func loadSalons() {
 			} else if error != nil {
 				log.Fatal(error)
 			}
-			salons = append(salons, Salon{
-				Name: line[0],
-				Logo: line[1],
-				Image: line[2],
-				Phone: line[3],
+			salons = append(salons, salonserver.Salon{
+				Name:     line[0],
+				Logo:     line[1],
+				Image:    line[2],
+				Phone:    line[3],
 				Bookings: line[4],
 			})
 		}
 	}
 	for _, l := range salons {
-		db.Create(&l)
+		DB.Create(&l)
 	}
 }
 
-func loadLevels(){
+func loadLevels() {
 	var err error
-	var levels []Level
+	var levels []salonserver.Level
 	var files []string
 
 	root := "data/csv/levels"
@@ -115,21 +100,21 @@ func loadLevels(){
 			a, _ := strconv.Atoi(line[1])
 			c, _ := strconv.Atoi(line[2])
 
-			levels = append(levels, Level{
-				Name: line[0],
-				Adapter: a,
+			levels = append(levels, salonserver.Level{
+				Name:       line[0],
+				Adapter:    a,
 				ColAdapter: c,
 			})
 		}
 	}
 	for _, l := range levels {
-		db.Create(&l)
+		DB.Create(&l)
 	}
 }
 
-func loadServices(){
+func loadServices() {
 	var err error
-	var services []Service
+	var services []salonserver.Service
 	var files []string
 
 	root := "data/csv/services"
@@ -160,22 +145,22 @@ func loadServices(){
 			c1, _ := strconv.Atoi(line[0])
 			c2, _ := strconv.Atoi(line[1])
 			p, _ := strconv.ParseFloat(line[3], 8)
-			services = append(services, Service{
-				Cat1: uint(c1),
-				Cat2: uint(c2),
+			services = append(services, salonserver.Service{
+				Cat1:    uint(c1),
+				Cat2:    uint(c2),
 				Service: line[2],
-				Price: p,
+				Price:   p,
 			})
 		}
 	}
 	for _, s := range services {
-		db.Create(&s)
+		DB.Create(&s)
 	}
 }
 
 func loadTeamMembers() {
 	var err error
-	var teamMembers []TeamMember
+	var teamMembers []salonserver.TeamMember
 
 	var files []string
 
@@ -207,35 +192,35 @@ func loadTeamMembers() {
 			price, _ := strconv.ParseFloat(line[13], 8)
 			position, _ := strconv.Atoi(line[14])
 
-			teamMembers = append(teamMembers, TeamMember{
-				Salon: uint(salon),
-				FirstName: line[1],
-				LastName: line[2],
-				Level: uint(level),
-				LevelName: line[4],
-				Image: line[5],
-				RemoteImage: line[6],
+			teamMembers = append(teamMembers, salonserver.TeamMember{
+				Salon:         uint(salon),
+				FirstName:     line[1],
+				LastName:      line[2],
+				Level:         uint(level),
+				LevelName:     line[4],
+				Image:         line[5],
+				RemoteImage:   line[6],
 				RemoteMontage: line[7],
-				Para1: line[8],
-				Para2: line[9],
-				Para3: line[10],
-				FavStyle: line[11],
-				Product: line[12],
-				Price: price,
-				Position: uint(position),
-				Slug: line[15],
+				Para1:         line[8],
+				Para2:         line[9],
+				Para3:         line[10],
+				FavStyle:      line[11],
+				Product:       line[12],
+				Price:         price,
+				Position:      uint(position),
+				Slug:          line[15],
 			})
 		}
 	}
 
 	for _, m := range teamMembers {
-		db.Create(&m)
+		DB.Create(&m)
 	}
 }
 
 func loadMetaInfo() {
 	var err error
-	var metaInfos []MetaInfo
+	var metaInfos []salonserver.MetaInfo
 
 	var files []string
 
@@ -263,17 +248,17 @@ func loadMetaInfo() {
 				log.Fatal(error)
 			}
 
-			salon, _ := strconv.Atoi(line[4])
-			metaInfos = append(metaInfos, MetaInfo{
+			salon, _ := strconv.Atoi(line[0])
+			metaInfos = append(metaInfos, salonserver.MetaInfo{
 				Salon: uint(salon),
-				Page:  line[0],
-				Title: line[1],
-				Text:  line[2],
-				Image: line[3],
+				Page:  line[1],
+				Title: line[2],
+				Text:  line[3],
+				Image: line[4],
 			})
 		}
 	}
 	for _, m := range metaInfos {
-		db.Create(&m)
+		DB.Create(&m)
 	}
 }
