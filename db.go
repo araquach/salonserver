@@ -1,4 +1,4 @@
-package db
+package salonserver
 
 import (
 	"gorm.io/driver/postgres"

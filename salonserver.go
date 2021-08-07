@@ -2,7 +2,6 @@ package salonserver
 
 import (
 	"flag"
-	"github.com/araquach/salonserver/db"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"html/template"
@@ -28,9 +27,9 @@ func Serve(s int) {
 	var dir string
 
 	dsn := os.Getenv("DATABASE_URL")
-	db.DBInit(dsn)
+	DBInit(dsn)
 
-	db.Migrate()
+	Migrate()
 
 	salon = s
 

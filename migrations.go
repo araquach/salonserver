@@ -1,9 +1,8 @@
-package db
+package salonserver
 
 import (
 	"bufio"
 	"encoding/csv"
-	"github.com/araquach/salonserver"
 	"io"
 	"log"
 	"os"
@@ -12,8 +11,8 @@ import (
 )
 
 func Migrate() {
-	DB.Migrator().DropTable(&salonserver.TeamMember{}, &salonserver.MetaInfo{}, &salonserver.Level{}, &salonserver.Salon{})
-	DB.AutoMigrate(&salonserver.TeamMember{}, &salonserver.MetaInfo{}, &salonserver.JoinusApplicant{}, &salonserver.ModelApplicant{}, &salonserver.Review{}, &salonserver.BookingRequest{}, &salonserver.Service{}, &salonserver.Level{}, &salonserver.Salon{})
+	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{})
+	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{})
 
 	loadSalons()
 	loadLevels()
@@ -24,7 +23,7 @@ func Migrate() {
 
 func loadSalons() {
 	var err error
-	var salons []salonserver.Salon
+	var salons []Salon
 	var files []string
 
 	root := "data/csv/salons"
@@ -52,7 +51,7 @@ func loadSalons() {
 			} else if error != nil {
 				log.Fatal(error)
 			}
-			salons = append(salons, salonserver.Salon{
+			salons = append(salons, Salon{
 				Name:     line[0],
 				Logo:     line[1],
 				Image:    line[2],
@@ -68,7 +67,7 @@ func loadSalons() {
 
 func loadLevels() {
 	var err error
-	var levels []salonserver.Level
+	var levels []Level
 	var files []string
 
 	root := "data/csv/levels"
@@ -100,7 +99,7 @@ func loadLevels() {
 			a, _ := strconv.Atoi(line[1])
 			c, _ := strconv.Atoi(line[2])
 
-			levels = append(levels, salonserver.Level{
+			levels = append(levels, Level{
 				Name:       line[0],
 				Adapter:    a,
 				ColAdapter: c,
@@ -114,7 +113,7 @@ func loadLevels() {
 
 func loadServices() {
 	var err error
-	var services []salonserver.Service
+	var services []Service
 	var files []string
 
 	root := "data/csv/services"
@@ -145,7 +144,7 @@ func loadServices() {
 			c1, _ := strconv.Atoi(line[0])
 			c2, _ := strconv.Atoi(line[1])
 			p, _ := strconv.ParseFloat(line[3], 8)
-			services = append(services, salonserver.Service{
+			services = append(services, Service{
 				Cat1:    uint(c1),
 				Cat2:    uint(c2),
 				Service: line[2],
@@ -160,7 +159,7 @@ func loadServices() {
 
 func loadTeamMembers() {
 	var err error
-	var teamMembers []salonserver.TeamMember
+	var teamMembers []TeamMember
 
 	var files []string
 
@@ -192,7 +191,7 @@ func loadTeamMembers() {
 			price, _ := strconv.ParseFloat(line[13], 8)
 			position, _ := strconv.Atoi(line[14])
 
-			teamMembers = append(teamMembers, salonserver.TeamMember{
+			teamMembers = append(teamMembers, TeamMember{
 				Salon:         uint(salon),
 				FirstName:     line[1],
 				LastName:      line[2],
@@ -220,7 +219,7 @@ func loadTeamMembers() {
 
 func loadMetaInfo() {
 	var err error
-	var metaInfos []salonserver.MetaInfo
+	var metaInfos []MetaInfo
 
 	var files []string
 
@@ -249,7 +248,7 @@ func loadMetaInfo() {
 			}
 
 			salon, _ := strconv.Atoi(line[0])
-			metaInfos = append(metaInfos, salonserver.MetaInfo{
+			metaInfos = append(metaInfos, MetaInfo{
 				Salon: uint(salon),
 				Page:  line[1],
 				Title: line[2],
