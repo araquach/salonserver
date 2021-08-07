@@ -59,6 +59,7 @@ type ModelApplicant struct {
 type TeamMember struct {
 	ID            uint    `json:"id" gorm:"primary_key"`
 	Salon         uint    `json:"salon"`
+	StaffId       uint    `json:"staff_id"`
 	FirstName     string  `json:"first_name"`
 	LastName      string  `json:"last_name"`
 	Level         uint    `json:"level"`
