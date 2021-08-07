@@ -124,6 +124,7 @@ type QuoteRespondent struct {
 	Mobile         string         `json:"mobile"`
 	Email          string         `json:"email"`
 	Regular        bool           `json:"regular"`
+	Selector       string         `json:"selector"`
 	Quote          datatypes.JSON `json:"quote"`
 }
 
@@ -139,5 +140,6 @@ type QuoteInfo struct {
 	Total    float64 `json:"total"`
 	Discount float64 `json:"discount"`
 	Regular  bool    `json:"regular"`
-	Expires  string
+	Expires  string  `json:"expires"`
+	Status   int     `json:"status"`
 }

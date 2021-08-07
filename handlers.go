@@ -64,7 +64,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Generate version number for scripts and css
 	rand.Seed(time.Now().UnixNano())
 
-	var t, d, i string
+	var t, d, i, fn string
 
 	var salonURL string
 
@@ -112,17 +112,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else if dir == "blog" || dir == "blog-info" {
-		path := path.Join(dir, name)
+		files, err := ioutil.ReadDir("blog")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		data, err := ioutil.ReadFile(path + ".txt")
+		for _, f := range files {
+			if strings.Contains(f.Name(), name) {
+				fn = f.Name()
+			}
+		}
+
+		data, err := ioutil.ReadFile("blog/" + fn)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		lines := strings.Split(string(data), "\n")
-		t = string(lines[0])
-		i = string(lines[4])
-		d = string(lines[6])
+		t = lines[0]
+		i = lines[4]
+		d = lines[6]
 
 	} else {
 		split := strings.Split(name, "-")[0]
@@ -227,9 +236,9 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	param = strings.Title(ln)
 
 	if param == "All" {
-		db.Where("salon = ?", salon).Find(&reviews)
+		db.Where("salon = ?", salon).Limit(20).Find(&reviews)
 	} else {
-		db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Find(&reviews)
+		db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
@@ -370,20 +379,32 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var blog Blog
+	var fn string
 
 	params := mux.Vars(r)
 
-	data, err := ioutil.ReadFile("blog/" + params["slug"] + ".txt")
+	files, err := ioutil.ReadDir("blog")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range files {
+		if strings.Contains(f.Name(), params["slug"]) {
+			fn = f.Name()
+		}
+	}
+
+	data, err := ioutil.ReadFile("blog/" + fn)
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return
 	}
 	lines := strings.Split(string(data), "\n")
-	title := string(lines[0])
-	date := string(lines[1])
-	author := string(lines[2])
-	image := string(lines[3])
-	intro := string(lines[6])
+	title := lines[0]
+	date := lines[1]
+	author := lines[2]
+	image := lines[3]
+	intro := lines[6]
 	text := strings.Join(lines[6:], "\n")
 	body := blackfriday.MarkdownBasic([]byte(text))
 	slug := params["slug"]
@@ -402,28 +423,37 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 
 	var blogs []Blog
 
-	files, err := ioutil.ReadDir("./blog")
+	files, err := ioutil.ReadDir("blog")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, fi := range files {
-		data, err := ioutil.ReadFile("./blog/" + fi.Name())
+	for _, f := range files {
+		today := time.Now()
+		startFrom := today.Add(-8760 * time.Hour)
+		split := strings.Split(f.Name(), " ")
+		date, err := time.Parse("2006-01-02", split[0])
 		if err != nil {
-			fmt.Println("File reading error", err)
-			return
+			panic(err)
 		}
-		slug := strings.Split(fi.Name(), ".")
-		lines := strings.Split(string(data), "\n")
-		title := string(lines[0])
-		date := string(lines[1])
-		author := string(lines[2])
-		image := string(lines[3])
-		intro := string(lines[6])
-		text := strings.Join(lines[6:8], "\n")
-		body := blackfriday.MarkdownBasic([]byte(text))
+		if date.After(startFrom) {
+			data, err := ioutil.ReadFile("blog/" + f.Name())
+			if err != nil {
+				fmt.Println("File reading error", err)
+				return
+			}
+			slug := strings.Split(split[1], ".")[0]
+			lines := strings.Split(string(data), "\n")
+			title := lines[0]
+			bDate := lines[1]
+			author := lines[2]
+			image := lines[3]
+			intro := lines[6]
+			text := strings.Join(lines[6:8], "\n")
+			body := blackfriday.MarkdownBasic([]byte(text))
 
-		blogs = append(blogs, Blog{Slug: slug[0], Date: date, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)})
+			blogs = append(blogs, Blog{Slug: slug, Date: bDate, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)})
+		}
 	}
 	sort.SliceStable(blogs, func(i, j int) bool { return blogs[i].Date > blogs[j].Date })
 
@@ -439,30 +469,43 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 
 	var blogs []Blog
 
-	files, err := ioutil.ReadDir("./blog")
+	files, err := ioutil.ReadDir("blog")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, fi := range files {
-		data, err := ioutil.ReadFile("./blog/" + fi.Name())
+	for _, f := range files {
+		today := time.Now()
+		startFrom := today.Add(-8760 * time.Hour)
+		split := strings.Split(f.Name(), " ")
+		date, err := time.Parse("2006-01-02", split[0])
 		if err != nil {
-			fmt.Println("File reading error", err)
-			return
+			panic(err)
 		}
-		slug := strings.Split(fi.Name(), ".")
-		lines := strings.Split(string(data), "\n")
-		title := string(lines[0])
-		image := string(lines[3])
-		date := string(lines[1])
-		text := string(lines[6])
-		body := strings.Split(text, ".")
+		if date.After(startFrom) {
+			data, err := ioutil.ReadFile("blog/" + f.Name())
+			if err != nil {
+				fmt.Println("File reading error", err)
+				return
+			}
+			slug := strings.Split(split[1], ".")[0]
+			lines := strings.Split(string(data), "\n")
+			title := lines[0]
+			image := lines[3]
+			bDate := lines[1]
+			text := lines[6]
+			body := strings.Split(text, ".")
 
-		blogs = append(blogs, Blog{Slug: slug[0], Date: date, Title: title, Image: image, Body: body[0]})
+			blogs = append(blogs, Blog{Slug: slug, Date: bDate, Title: title, Image: image, Body: body[0]})
+		}
 	}
 	sort.SliceStable(blogs, func(i, j int) bool { return blogs[i].Date > blogs[j].Date })
 
-	json, err := json.Marshal(blogs[0:4])
+	if len(blogs) > 4 {
+		blogs = blogs[:4]
+	}
+
+	json, err := json.Marshal(blogs)
 	if err != nil {
 		log.Panic(err)
 	}
