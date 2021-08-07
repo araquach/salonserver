@@ -188,7 +188,7 @@ func loadTeamMembers() {
 			}
 			salon, _ := strconv.Atoi(line[0])
 			staffId, _ := strconv.Atoi(line[1])
-			level, _ := strconv.Atoi(line[3])
+			level, _ := strconv.Atoi(line[4])
 			price, _ := strconv.ParseFloat(line[14], 8)
 			position, _ := strconv.Atoi(line[15])
 
