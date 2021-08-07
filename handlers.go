@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/araquach/salonserver/db"
 	"github.com/gorilla/mux"
 	"github.com/mailgun/mailgun-go/v3"
 	"github.com/russross/blackfriday"
@@ -87,7 +88,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	if dir == "team" || dir == "team-info" && len(name) > 0 {
 		m := TeamMember{}
-		db.Where("salon = ? AND slug = ?", salon, name).First(&m)
+		db.DB.Where("salon = ? AND slug = ?", salon, name).First(&m)
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
@@ -104,7 +105,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			ln := longName(name)
 			param := strings.Title(ln)
 
-			db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
+			db.DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -139,7 +140,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		page := path.Join(dir, split)
 
 		m := MetaInfo{}
-		db.Where("salon = ?", salon).Where("page = ?", page).First(&m)
+		db.DB.Where("salon = ?", salon).Where("page = ?", page).First(&m)
 
 		if m.Title != "" {
 			t = m.Title
@@ -199,7 +200,7 @@ func apiTeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var team []TeamMember
-	db.Where("salon = ?", salon).Order("position").Find(&team)
+	db.DB.Where("salon = ?", salon).Order("position").Find(&team)
 
 	json, err := json.Marshal(team)
 	if err != nil {
@@ -215,7 +216,7 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 	param := vars["slug"]
 
 	tm := TeamMember{}
-	db.Where("salon = ?", salon).Where("slug = ?", param).First(&tm)
+	db.DB.Where("salon = ?", salon).Where("slug = ?", param).First(&tm)
 
 	json, err := json.Marshal(tm)
 	if err != nil {
@@ -236,9 +237,9 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	param = strings.Title(ln)
 
 	if param == "All" {
-		db.Where("salon = ?", salon).Limit(20).Find(&reviews)
+		db.DB.Where("salon = ?", salon).Limit(20).Find(&reviews)
 	} else {
-		db.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Limit(20).Find(&reviews)
+		db.DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
@@ -305,7 +306,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db.Create(&data)
+	db.DB.Create(&data)
 
 	htmlContent, err := ParseEmailTemplate("templates/recruitment.gohtml", data)
 	if err != nil {
@@ -350,7 +351,7 @@ func apiModel(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db.Create(&data)
+	db.DB.Create(&data)
 
 	return
 }
@@ -362,14 +363,14 @@ func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&data)
 
-	db.Where("mobile", data.Mobile).First(&br)
+	db.DB.Where("mobile", data.Mobile).First(&br)
 
 	if data.Mobile == br.Mobile {
 		dbResponse.Message = "You've already registered! We'll be in touch soon"
 		responseJSON(w, dbResponse)
 		return
 	}
-	db.Create(&data)
+	db.DB.Create(&data)
 
 	sendSms(data.Stylist)
 	return
@@ -517,7 +518,7 @@ func apiServices(w http.ResponseWriter, r *http.Request) {
 
 	var p []Service
 
-	db.Find(&p)
+	db.DB.Find(&p)
 
 	json, err := json.Marshal(p)
 	if err != nil {
@@ -531,7 +532,7 @@ func apiStylists(w http.ResponseWriter, r *http.Request) {
 
 	var s []TeamMember
 
-	db.Find(&s)
+	db.DB.Find(&s)
 
 	json, err := json.Marshal(s)
 	if err != nil {
@@ -545,7 +546,7 @@ func apiLevels(w http.ResponseWriter, r *http.Request) {
 
 	var l []Level
 
-	db.Find(&l)
+	db.DB.Find(&l)
 
 	json, err := json.Marshal(l)
 	if err != nil {
@@ -559,7 +560,7 @@ func apiSalons(w http.ResponseWriter, r *http.Request) {
 
 	var s []Salon
 
-	db.Find(&s)
+	db.DB.Find(&s)
 
 	json, err := json.Marshal(s)
 	if err != nil {
@@ -580,7 +581,7 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db.Create(&data)
+	db.DB.Create(&data)
 
 	sID := data.StylistSalonID
 
@@ -674,7 +675,7 @@ func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	param := vars["link"]
 
-	db.Where("link", param).First(&services)
+	db.DB.Where("link", param).First(&services)
 
 	json, err := json.Marshal(services)
 	if err != nil {
