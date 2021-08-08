@@ -29,9 +29,11 @@ func Serve(s int) {
 	dsn := os.Getenv("DATABASE_URL")
 	DBInit(dsn)
 
-	Migrate()
-
 	salon = s
+
+	if salon == 2 {
+		Migrate()
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
