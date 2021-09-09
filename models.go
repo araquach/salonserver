@@ -124,6 +124,7 @@ type QuoteRespondent struct {
 	Name           string         `json:"name"`
 	Mobile         string         `json:"mobile"`
 	Email          string         `json:"email"`
+	Referral       string         `json:"referral"`
 	Regular        bool           `json:"regular"`
 	Selector       string         `json:"selector"`
 	Quote          datatypes.JSON `json:"quote"`
