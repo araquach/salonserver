@@ -436,7 +436,7 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) {
+		if date.After(startFrom) && date.Before(today) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
@@ -482,7 +482,7 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) {
+		if date.After(startFrom) && date.Before(today) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
