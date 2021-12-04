@@ -238,7 +238,7 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	if param == "All" {
 		DB.Where("salon = ?", salon).Limit(20).Find(&reviews)
 	} else {
-		DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("length(review) > 0").Limit(20).Find(&reviews)
+		DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("length(review) > 3").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
