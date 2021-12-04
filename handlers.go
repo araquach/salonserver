@@ -104,7 +104,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			ln := longName(name)
 			param := strings.Title(ln)
 
-			DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
+			DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").First(&r)
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -227,7 +227,7 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 func apiReviews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	reviews := []Review{}
+	var reviews []Review
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
@@ -238,7 +238,7 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	if param == "All" {
 		DB.Where("salon = ?", salon).Limit(20).Find(&reviews)
 	} else {
-		DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Where("rating > 3").Where("length(review) > 0").Limit(20).Find(&reviews)
+		DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("length(review) > 0").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
