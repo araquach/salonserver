@@ -135,7 +135,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		m := MetaInfo{}
-		DB.Where("salon = ?", salon).Where("page = ?", name).First(&m)
+		DB.Where("salon = ?", salon).Where("page = ?", dir).First(&m)
 
 		if m.Title != "" {
 			t = m.Title
