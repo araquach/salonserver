@@ -96,7 +96,7 @@ type MetaInfo struct {
 }
 
 type BookingRequest struct {
-	ID        uint   `json:"id" gorm: "primary_key"`
+	ID        uint   `json:"id" gorm:"primary_key"`
 	Salon     uint   `json:"salon"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`

@@ -134,12 +134,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		d = lines[6]
 
 	} else {
-		split := strings.Split(name, "-")[0]
-
-		page := path.Join(dir, split)
-
 		m := MetaInfo{}
-		DB.Where("salon = ?", salon).Where("page = ?", page).First(&m)
+		DB.Where("salon = ?", salon).Where("page = ?", name).First(&m)
 
 		if m.Title != "" {
 			t = m.Title
