@@ -24,9 +24,9 @@ type Response struct {
 }
 
 type tm struct {
-	name   string
+	name string
 	mobile string
-	link   string
+	link string
 }
 
 func forceSsl(next http.Handler) http.Handler {
@@ -104,7 +104,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			ln := longName(name)
 			param := strings.Title(ln)
 
-			DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("length(review) != 0").First(&r)
+			DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -134,8 +134,10 @@ func home(w http.ResponseWriter, r *http.Request) {
 		d = lines[6]
 
 	} else {
+		page := path.Join(dir, name)
+
 		m := MetaInfo{}
-		DB.Where("salon = ?", salon).Where("page = ?", dir).First(&m)
+		DB.Where("salon = ?", salon).Where("page = ?", page).First(&m)
 
 		if m.Title != "" {
 			t = m.Title
@@ -223,7 +225,7 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 func apiReviews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var reviews []Review
+	reviews := []Review{}
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
@@ -232,9 +234,9 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	param = strings.Title(ln)
 
 	if param == "All" {
-		DB.Where("salon = ?", salon).Where("rating > 3").Where("length(review) != 0").Limit(20).Find(&reviews)
+		DB.Where("salon = ?", salon).Limit(20).Find(&reviews)
 	} else {
-		DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("length(review) != 0").Limit(20).Find(&reviews)
+		DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
@@ -432,7 +434,7 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) && date.Before(today) {
+		if date.After(startFrom) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
@@ -478,7 +480,7 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) && date.Before(today) {
+		if date.After(startFrom) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
@@ -622,18 +624,18 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	month := now.AddDate(0, 0, 7*4)
+	month := now.AddDate(0, 0, 7 * 4)
 	formatted := month.Format("02/01/2006")
 
 	quote.Discount = quote.Total * .8
 	quote.Expires = formatted
 
-	htmlContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.gohtml", quote)
+	htmlContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.gohtml", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	textContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.txt", quote)
+	textContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
