@@ -24,9 +24,9 @@ type Response struct {
 }
 
 type tm struct {
-	name string
+	name   string
 	mobile string
-	link string
+	link   string
 }
 
 func forceSsl(next http.Handler) http.Handler {
@@ -434,7 +434,7 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) {
+		if date.After(startFrom) && date.Before(today) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
@@ -480,7 +480,7 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		if date.After(startFrom) {
+		if date.After(startFrom) && date.Before(today) {
 			data, err := ioutil.ReadFile("blog/" + f.Name())
 			if err != nil {
 				fmt.Println("File reading error", err)
@@ -624,18 +624,18 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	month := now.AddDate(0, 0, 7 * 4)
+	month := now.AddDate(0, 0, 7*4)
 	formatted := month.Format("02/01/2006")
 
 	quote.Discount = quote.Total * .8
 	quote.Expires = formatted
 
-	htmlContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.gohtml", quote)
+	htmlContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.gohtml", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	textContent, err := ParseEmailTemplate("templates/" + tplFolder + "/quote.txt", quote)
+	textContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
