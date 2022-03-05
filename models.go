@@ -16,18 +16,18 @@ type Salon struct {
 }
 
 type Service struct {
-	Id      uint    `json:"id" gorm:"primary_key"`
-	Cat1    uint    `json:"cat1"`
-	Cat2    uint    `json:"cat2"`
-	Service string  `json:"service"`
-	Price   float64 `json:"price"`
+	Id           uint    `json:"id" gorm:"primary_key"`
+	Cat1         uint    `json:"cat1"`
+	Cat2         uint    `json:"cat2"`
+	Service      string  `json:"service"`
+	Price        float64 `json:"price"`
+	ProductPrice float64 `json:"product_price"`
 }
 
 type Level struct {
 	Id         uint   `json:"id" gorm:"primary_key"`
 	Name       string `json:"name"`
 	Adapter    int    `json:"adapter"`
-	ColAdapter int    `json:"col_adapter"`
 }
 
 type ContactMessage struct {
