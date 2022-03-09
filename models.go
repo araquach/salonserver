@@ -25,9 +25,9 @@ type Service struct {
 }
 
 type Level struct {
-	Id         uint   `json:"id" gorm:"primary_key"`
-	Name       string `json:"name"`
-	Adapter    int    `json:"adapter"`
+	Id      uint   `json:"id" gorm:"primary_key"`
+	Name    string `json:"name"`
+	Adapter int    `json:"adapter"`
 }
 
 type ContactMessage struct {
