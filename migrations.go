@@ -96,7 +96,7 @@ func loadLevels() {
 				log.Fatal(error)
 			}
 
-			a, _ := strconv.Atoi(line[1])
+			a, _ := strconv.ParseFloat(line[1], 8)
 
 			levels = append(levels, Level{
 				Name:       line[0],
