@@ -229,6 +229,10 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
+	if strings.Contains(param, "-") {
+		param = strings.Split(param, "-")[0]
+	}
+
 	ln := longName(param)
 
 	param = strings.Title(ln)
