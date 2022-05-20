@@ -104,7 +104,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			ln := longName(name)
 			param := strings.Title(ln)
 
-			DB.Where("salon = ?", salon).Where("stylist LIKE ?", "Staff: "+param+" %").First(&r)
+			DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").First(&r)
 
 			t = param + " recently received this great review!"
 			d = r.Review
