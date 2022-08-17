@@ -46,19 +46,6 @@ func responseJSON(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func longName(n string) (l string) {
-	if n == "brad" {
-		n = "bradley"
-	}
-	if n == "nat" {
-		n = "natalie"
-	}
-	if n == "matt" {
-		n = "matthew"
-	}
-	return n
-}
-
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	// Generate version number for scripts and css
