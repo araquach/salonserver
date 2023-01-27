@@ -25,9 +25,9 @@ type Service struct {
 }
 
 type Level struct {
-	Id      uint   `json:"id" gorm:"primary_key"`
-	Name    string `json:"name"`
-	Adapter float64    `json:"adapter"`
+	Id      uint    `json:"id" gorm:"primary_key"`
+	Name    string  `json:"name"`
+	Adapter float64 `json:"adapter"`
 }
 
 type ContactMessage struct {
@@ -144,4 +144,10 @@ type QuoteInfo struct {
 	Regular  bool    `json:"regular"`
 	Expires  string  `json:"expires"`
 	Status   int     `json:"status"`
+}
+
+type OpenEveningApplicant struct {
+	gorm.Model
+	Name   string `json:"name"`
+	Mobile string `json:"mobile"`
 }

@@ -12,7 +12,7 @@ import (
 
 func Migrate() {
 	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{})
-	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{})
+	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{})
 
 	loadSalons()
 	loadLevels()
@@ -99,8 +99,8 @@ func loadLevels() {
 			a, _ := strconv.ParseFloat(line[1], 8)
 
 			levels = append(levels, Level{
-				Name:       line[0],
-				Adapter:    a,
+				Name:    line[0],
+				Adapter: a,
 			})
 		}
 	}
@@ -144,10 +144,10 @@ func loadServices() {
 			p, _ := strconv.ParseFloat(line[3], 8)
 			pp, _ := strconv.ParseFloat(line[4], 8)
 			services = append(services, Service{
-				Cat1:    uint(c1),
-				Cat2:    uint(c2),
-				Service: line[2],
-				Price:   p,
+				Cat1:         uint(c1),
+				Cat2:         uint(c2),
+				Service:      line[2],
+				Price:        p,
 				ProductPrice: pp,
 			})
 		}

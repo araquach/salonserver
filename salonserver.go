@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	tpl *template.Template
+	tpl   *template.Template
 	salon int
 )
 
@@ -46,7 +46,6 @@ func Serve(s int) {
 		panic(err)
 	}
 
-
 	flag.StringVar(&dir, "dir", "dist", "the directory to serve files from")
 	flag.Parse()
 	r := mux.NewRouter()
@@ -62,6 +61,7 @@ func Serve(s int) {
 	r.HandleFunc("/api/blog-post/{slug}", apiBlogPost).Methods("GET")
 	r.HandleFunc("/api/blog-posts", apiBlogPosts).Methods("GET")
 	r.HandleFunc("/api/news-items", apiNewsItems).Methods("GET")
+	r.HandleFunc("/api/open-evening", apiOpenEvening).Methods("POST")
 	// priceCalc API
 	r.HandleFunc("/api/salons", apiSalons).Methods("GET")
 	r.HandleFunc("/api/stylists", apiStylists).Methods("GET")
@@ -76,5 +76,5 @@ func Serve(s int) {
 
 	log.Printf("Starting server on %s", port)
 
-	http.ListenAndServe(":" + port, forceSsl(r))
+	http.ListenAndServe(":"+port, forceSsl(r))
 }

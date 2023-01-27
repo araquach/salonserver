@@ -727,3 +727,17 @@ func sendSms(n string) {
 		fmt.Println(message.ID)
 	}
 }
+
+func apiOpenEvening(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+
+	var data OpenEveningApplicant
+	err := decoder.Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	DB.Create(&data)
+
+	return
+}
