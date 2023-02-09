@@ -2,7 +2,6 @@ package salonserver
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/lib/pq"
 	"gorm.io/datatypes"
 	"time"
 )
@@ -155,19 +154,20 @@ type OpenEveningApplicant struct {
 
 type FeedbackResult struct {
 	gorm.Model
-	Name         string         `json:"name"`
-	Mobile       string         `json:"mobile"`
-	Intro        string         `json:"intro"`
-	Consultation string         `json:"consultation"`
-	Cleanliness  string         `json:"cleanliness"`
-	Appearance   string         `json:"appearance"`
-	Products     string         `json:"products"`
-	Styling      string         `json:"styling"`
-	Schemes      pq.StringArray `json:"schemes" gorm:"type:text[]"`
-	Value        string         `json:"value"`
-	Experience   string         `json:"experience"`
-	Result       string         `json:"result"`
-	Return       string         `json:"return"`
-	Repeat       string         `json:"repeat"`
-	Comments     string         `json:"comments"`
+	Name         string `json:"name"`
+	Mobile       string `json:"mobile"`
+	Intro        string `json:"intro"`
+	Consultation string `json:"consultation"`
+	Cleanliness  string `json:"cleanliness"`
+	Appearance   string `json:"appearance"`
+	Products     string `json:"products"`
+	Styling      string `json:"styling"`
+	Rec          string `json:"rec"`
+	Points       string `json:"points"`
+	Value        string `json:"value"`
+	Experience   string `json:"experience"`
+	Result       string `json:"result"`
+	Return       string `json:"return"`
+	Repeat       string `json:"repeat"`
+	Comments     string `json:"comments"`
 }
