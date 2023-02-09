@@ -163,7 +163,7 @@ type FeedbackResult struct {
 	Appearance   string         `json:"appearance"`
 	Products     string         `json:"products"`
 	Styling      string         `json:"styling"`
-	Schemes      pq.StringArray `json:"schemes" gorm:"type:string[]"`
+	Schemes      pq.StringArray `json:"schemes" gorm:"type:text[]"`
 	Value        string         `json:"value"`
 	Experience   string         `json:"experience"`
 	Result       string         `json:"result"`
