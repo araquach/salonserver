@@ -741,3 +741,17 @@ func apiOpenEvening(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+func apiFeedbackResult(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+
+	var data FeedbackResult
+	err := decoder.Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	DB.Create(&data)
+
+	return
+}

@@ -12,7 +12,7 @@ import (
 
 func Migrate() {
 	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{})
-	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{})
+	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{})
 
 	loadSalons()
 	loadLevels()
