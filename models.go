@@ -162,8 +162,8 @@ type FeedbackResult struct {
 	Appearance   string `json:"appearance"`
 	Products     string `json:"products"`
 	Styling      string `json:"styling"`
-	Rec          string `json:"rec"`
-	Points       string `json:"points"`
+	Rec          bool   `json:"rec"`
+	Points       bool   `json:"points"`
 	Value        string `json:"value"`
 	Experience   string `json:"experience"`
 	Result       string `json:"result"`
