@@ -78,12 +78,13 @@ type TeamMember struct {
 }
 
 type Review struct {
-	ID      uint      `json:"id" gorm:"primary_key"`
-	Date    time.Time `json:"date"`
-	Salon   uint      `json:"salon"`
-	Review  string    `json:"review"`
-	Client  string    `json:"client"`
-	Stylist string    `json:"stylist"`
+	ID      uint   `json:"id" gorm:"primary_key"`
+	Date    string `json:"date"`
+	Salon   uint   `json:"salon"`
+	Review  string `json:"review"`
+	Client  string `json:"client"`
+	Stylist string `json:"stylist"`
+	Rating  int    `json:"rating"`
 }
 
 type MetaInfo struct {

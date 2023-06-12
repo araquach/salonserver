@@ -248,7 +248,7 @@ func apiSendMessage(w http.ResponseWriter, r *http.Request) {
 
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
 
-	sender := data.Email
+	sender := "info@basehairdressing.co.uk"
 	subject := "New Message for Base"
 	body := data.Message
 	recipient := "adam@jakatasalon.co.uk"

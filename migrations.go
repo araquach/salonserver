@@ -3,22 +3,184 @@ package salonserver
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 func Migrate() {
-	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{})
-	DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{})
+	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &Review{})
+	err := DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{})
+	if err != nil {
+		log.Fatalf("Failed to seed the data: %v", err)
+	}
 
 	loadSalons()
 	loadLevels()
 	loadServices()
 	loadTeamMembers()
 	loadMetaInfo()
+	loadReviews()
+
+}
+
+func loadReviews() {
+	var files []string
+
+	root := "reviews"
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".csv" {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+
+		reviews, err := divideByBlock(file)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		for _, review := range reviews {
+			s := filepath.Base(file)
+			salon := strings.Split(s, "_")[0]
+			salonId, err := strconv.Atoi(salon)
+			if err != nil {
+				log.Fatalf("Couldnt convert to integer: %v", err)
+			}
+
+			//fmt.Printf("Salon: %v\n", salonId)
+			//fmt.Printf("Rating: %d\n", review.Rating)
+			//fmt.Printf("Date: %s\n", review.Date)
+			//fmt.Printf("Stylist: %s\n", review.Stylist)
+			//fmt.Printf("Client: %s\n", review.Client)
+			//fmt.Printf("Review: %s\n", review.Review)
+			//fmt.Println("")
+
+			review.Salon = uint(salonId)
+
+			DB.Create(&review)
+		}
+	}
+}
+
+func parseBlock(block []string) (*Review, error) {
+	headerPattern := regexp.MustCompile(`^([1-5]),,(\d{2}/\d{2}/\d{2}),,([^,]+),,`)
+	footerPattern := regexp.MustCompile(`^- (.*)`)
+	reviewPattern := regexp.MustCompile(`"""(.*?)"""`)
+
+	var review Review
+
+	// Parse header (first line of block)
+	headerSubmatch := headerPattern.FindStringSubmatch(block[0])
+	if len(headerSubmatch) < 4 {
+		return nil, fmt.Errorf("unable to parse header: %s", block[0])
+	}
+
+	// Rating
+	rating := headerSubmatch[1]
+	review.Rating, _ = strconv.Atoi(rating)
+
+	// Date
+	review.Date = headerSubmatch[2]
+
+	// Stylist
+	review.Stylist = headerSubmatch[3]
+
+	// Parse footer (last line of block)
+	footerSubmatch := footerPattern.FindStringSubmatch(block[len(block)-1])
+	if len(footerSubmatch) < 2 {
+		return nil, fmt.Errorf("unable to parse footer: %s", block[len(block)-1])
+	}
+
+	// Client
+	review.Client = strings.TrimRight(footerSubmatch[1], ",")
+
+	// Join all lines except header and footer in the block, then use regex to find and extract review text
+	blockText := strings.Join(block[1:len(block)-1], "\n")
+	reviewMatch := reviewPattern.FindStringSubmatch(blockText)
+
+	if len(reviewMatch) > 0 {
+		// If a triple-quote delimited review was found, use it
+		review.Review = reviewMatch[1]
+	} else {
+		// Split by commas and newlines, then rejoin only the parts within triple quotes
+		fields := strings.FieldsFunc(blockText, func(r rune) bool {
+			return r == ',' || r == '\n'
+		})
+		parts := []string{}
+		for _, field := range fields {
+			// Only keep parts within triple quotes
+			if strings.HasPrefix(field, `"`) && strings.HasSuffix(field, `"`) {
+				parts = append(parts, field)
+			}
+		}
+		// Join parts back into a single string, excluding the quotation marks
+		joinedParts := strings.Join(parts, " ")
+		if len(joinedParts) > 0 {
+			review.Review = joinedParts[1 : len(joinedParts)-1]
+		} else {
+			review.Review = ""
+		}
+	}
+
+	return &review, nil
+}
+
+func divideByBlock(filename string) ([]Review, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	endPattern := regexp.MustCompile(`^- .*`)
+
+	var reviews []Review
+	block := make([]string, 0)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Append the line to the current block
+		block = append(block, line)
+
+		// If the line matches the end pattern, it's the end of a block
+		if endPattern.MatchString(line) {
+			// Parse the block and add the review to the list
+			review, err := parseBlock(block)
+			if err != nil {
+				return nil, err
+			}
+			reviews = append(reviews, *review)
+
+			// Start a new block
+			block = make([]string, 0)
+		}
+	}
+
+	// Handle scan error
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return reviews, nil
 }
 
 func loadSalons() {
