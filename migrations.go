@@ -32,7 +32,7 @@ func Migrate() {
 func loadReviews() {
 	var files []string
 
-	root := "reviews"
+	root := "data/csv/reviews"
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
