@@ -172,3 +172,17 @@ type FeedbackResult struct {
 	Repeat       string `json:"repeat"`
 	Comments     string `json:"comments"`
 }
+
+type OnlineStoreTile struct {
+	ID          uint   `json:"id" gorm:"primaryKey"`
+	Brand       string `json:"brand"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
+	Url         string `json:"url"`
+}
+
+type OnlineStoreBanner struct {
+	ID    uint   `json:"id" gorm:"primaryKey"`
+	Image string `json:"image"`
+	Url   string `json:"url"`
+}

@@ -13,9 +13,16 @@ import (
 	"strings"
 )
 
+var tiles []OnlineStoreTile
+var banners []OnlineStoreBanner
+
 func Migrate() {
-	DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &Review{})
-	err := DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{})
+	err := DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
+	if err != nil {
+		log.Fatalf("Failed to seed the data: %v", err)
+		return
+	}
+	err = DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
 	if err != nil {
 		log.Fatalf("Failed to seed the data: %v", err)
 	}
@@ -26,7 +33,8 @@ func Migrate() {
 	loadTeamMembers()
 	loadMetaInfo()
 	loadReviews()
-
+	loadTiles()
+	loadBanners()
 }
 
 func loadReviews() {
@@ -424,4 +432,48 @@ func loadMetaInfo() {
 	for _, m := range metaInfos {
 		DB.Create(&m)
 	}
+}
+
+func loadTiles() {
+	file := "data/csv/store/tiles-Table 1.csv"
+	csvFile, _ := os.Open(file)
+
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	for {
+		line, error := reader.Read()
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			log.Fatal(error)
+		}
+
+		tiles = append(tiles, OnlineStoreTile{
+			Brand:       line[0],
+			Description: line[1],
+			Image:       line[2],
+			Url:         line[3],
+		})
+	}
+	DB.Create(&tiles)
+}
+
+func loadBanners() {
+	file := "data/csv/store/banners-Table 1.csv"
+	csvFile, _ := os.Open(file)
+
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	for {
+		line, error := reader.Read()
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			log.Fatal(error)
+		}
+
+		banners = append(banners, OnlineStoreBanner{
+			Image: line[0],
+			Url:   line[1],
+		})
+	}
+	DB.Create(&banners)
 }

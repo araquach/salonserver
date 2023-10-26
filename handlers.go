@@ -755,3 +755,38 @@ func apiFeedbackResult(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+func apiStoreData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var storeData struct {
+		Tiles   []OnlineStoreTile   `json:"tiles"`
+		Banners []OnlineStoreBanner `json:"banners"`
+	}
+
+	var tiles []OnlineStoreTile
+	var banners []OnlineStoreBanner
+
+	if err := DB.Find(&tiles).Error; err != nil {
+		http.Error(w, "Failed to retrieve tiles", http.StatusInternalServerError)
+		log.Println("Error retrieving tiles:", err)
+		return
+	}
+
+	if err := DB.Find(&banners).Error; err != nil {
+		http.Error(w, "Failed to retrieve banners", http.StatusInternalServerError)
+		log.Println("Error retrieving banners:", err)
+		return
+	}
+
+	storeData.Tiles = tiles
+	storeData.Banners = banners
+
+	respData, err := json.Marshal(storeData)
+	if err != nil {
+		http.Error(w, "Failed to marshal data", http.StatusInternalServerError)
+		log.Println("Error marshalling data:", err)
+		return
+	}
+	w.Write(respData)
+}
