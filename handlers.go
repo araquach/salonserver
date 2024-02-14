@@ -389,9 +389,13 @@ func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
 
 	// Use a map to hold the fields to update to leverage GORM's Updates method
 	updateFields := map[string]interface{}{}
+	if len(input.Notes) > 0 {
+		updateFields["notes"] = input.Notes
+	}
 
-	updateFields["notes"] = input.Notes
-	updateFields["follow_up"] = input.FollowUp
+	if input.FollowUp != "" {
+		updateFields["follow_up"] = input.FollowUp
+	}
 
 	if len(updateFields) == 0 {
 		http.Error(w, "No valid fields provided for update", http.StatusBadRequest)
