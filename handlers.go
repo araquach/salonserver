@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/lib/pq"
 	"github.com/mailgun/mailgun-go/v3"
 	"github.com/russross/blackfriday"
 	"github.com/textmagic/textmagic-rest-go"
@@ -366,19 +367,44 @@ func apiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
-	var updatedApplicant JoinusApplicant
-	if err := json.NewDecoder(r.Body).Decode(&updatedApplicant); err != nil {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Define a struct to decode only the fields you expect
+	type updateInput struct {
+		Notes    pq.StringArray `json:"notes" gorm:"type:text[]"`
+		FollowUp string         `json:"follow_up"`
+	}
+
+	var input updateInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	vars := mux.Vars(r)
+	applicantID := vars["id"] // Assuming you're using gorilla/mux or a similar router
+
+	// Use a map to hold the fields to update to leverage GORM's Updates method
+	updateFields := map[string]interface{}{}
+
+	updateFields["notes"] = input.Notes
+	updateFields["follow_up"] = input.FollowUp
+
+	if len(updateFields) == 0 {
+		http.Error(w, "No valid fields provided for update", http.StatusBadRequest)
+		return
+	}
+
 	var applicant JoinusApplicant
-	if result := DB.Where("id = ?", updatedApplicant.ID).First(&applicant); result.Error != nil {
+	if result := DB.First(&applicant, applicantID); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusNotFound)
 		return
 	}
 
-	if result := DB.Model(&applicant).Updates(updatedApplicant); result.Error != nil {
+	if result := DB.Model(&applicant).Updates(updateFields); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
