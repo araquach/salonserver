@@ -55,6 +55,9 @@ func Serve(s int) {
 	r.HandleFunc("/api/team/{slug}", apiTeamMember)
 	r.HandleFunc("/api/sendMessage", apiSendMessage)
 	r.HandleFunc("/api/joinus", apiJoinus)
+	r.HandleFunc("/api/joinus-applicants", apiJoinusApplicants).Methods("GET")
+	r.HandleFunc("/api/joinus-applicant/{id}", apiJoinusApplicant).Methods("GET")
+	r.HandleFunc("/api/joinus-applicant", apiJoinUsApplicantUpdate).Methods("PUT")
 	r.HandleFunc("/api/models", apiModel)
 	r.HandleFunc("/api/reviews/{tm}", apiReviews)
 	r.HandleFunc("/api/booking-request", apiBookingRequest)
@@ -76,7 +79,7 @@ func Serve(s int) {
 	r.HandleFunc("/{name}", home)
 	r.HandleFunc("/", home)
 
-	log.Printf("Starting server on %s", port)
+	log.Printf("Starting server on: http://localhost:%s", port)
 
 	http.ListenAndServe(":"+port, forceSsl(r))
 }

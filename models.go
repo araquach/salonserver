@@ -2,6 +2,7 @@ package salonserver
 
 import (
 	"github.com/jinzhu/gorm"
+	"github.com/lib/pq"
 	"gorm.io/datatypes"
 	"time"
 )
@@ -37,16 +38,20 @@ type ContactMessage struct {
 }
 
 type JoinusApplicant struct {
-	gorm.Model
-	Salon    uint   `json:"salon"`
-	Role     string `json:"role"`
-	Name     string `json:"name"`
-	Mobile   string `json:"mobile"`
-	Email    string `json:"email"`
-	Position string `json:"position"`
-	About    string `json:"about"`
-	WhyHair  string `json:"why_hair"`
-	WhyUs    string `json:"why_us"`
+	ID        uint           `json:"id" gorm:"primary_key"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	Salon     uint           `json:"salon"`
+	Role      string         `json:"role"`
+	Name      string         `json:"name"`
+	Mobile    string         `json:"mobile"`
+	Email     string         `json:"email"`
+	Position  string         `json:"position"`
+	About     string         `json:"about"`
+	WhyHair   string         `json:"why_hair"`
+	WhyUs     string         `json:"why_us"`
+	FollowUp  string         `json:"follow_up"`
+	Notes     pq.StringArray `json:"notes" gorm:"type:text[]"`
 }
 
 type ModelApplicant struct {

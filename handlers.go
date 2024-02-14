@@ -29,6 +29,12 @@ type tm struct {
 	link   string
 }
 
+type UpdateFields struct {
+	ID       int64  `json:"id"`
+	Notes    string `json:"notes,omitempty"`
+	FollowUp string `json:"follow_up,omitempty"`
+}
+
 func forceSsl(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("GO_ENV") == "production" {
@@ -328,6 +334,60 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+}
+
+func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	applicants := []JoinusApplicant{}
+	DB.Order("id desc").Find(&applicants)
+
+	json, err := json.Marshal(applicants)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	vars := mux.Vars(r)
+	param := vars["id"]
+
+	applicant := JoinusApplicant{}
+	DB.Preload("Notes").Where("id = ?", param).First(&applicant)
+
+	json, err := json.Marshal(applicant)
+	if err != nil {
+		log.Println(err)
+	}
+	w.Write(json)
+}
+
+func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
+	var updatedApplicant JoinusApplicant
+	if err := json.NewDecoder(r.Body).Decode(&updatedApplicant); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var applicant JoinusApplicant
+	if result := DB.Where("id = ?", updatedApplicant.ID).First(&applicant); result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusNotFound)
+		return
+	}
+
+	if result := DB.Model(&applicant).Updates(updatedApplicant); result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(applicant); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func apiModel(w http.ResponseWriter, r *http.Request) {
