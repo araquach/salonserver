@@ -301,16 +301,21 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	DB.Create(&data)
+	if err := DB.Create(&data).Error; err != nil {
+		http.Error(w, "Failed to save data", http.StatusInternalServerError)
+		return
+	}
 
 	htmlContent, err := ParseEmailTemplate("templates/recruitment.gohtml", data)
 	if err != nil {
-		log.Fatalln(err)
+		http.Error(w, "Failed to parse HTML email template", http.StatusInternalServerError)
+		return
 	}
 
 	textContent, err := ParseEmailTemplate("templates/recruitment.txt", data)
 	if err != nil {
-		log.Fatalln(err)
+		http.Error(w, "Failed to parse text email template", http.StatusInternalServerError)
+		return
 	}
 
 	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
@@ -329,12 +334,13 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	// Send the message	with a 10 second timeout
 	resp, id, err := mg.Send(ctx, m)
-
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to send email", http.StatusInternalServerError)
+		return
 	}
 
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Application submitted successfully. ID: %s Resp: %s\n", id, resp)
 }
 
 func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {

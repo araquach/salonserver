@@ -17,7 +17,7 @@ type Salon struct {
 }
 
 type Service struct {
-	Id           uint    `json:"id" gorm:"primary_key"`
+	Id           uint    `json:"id" gorm:"primaryKey"`
 	Cat1         uint    `json:"cat1"`
 	Cat2         uint    `json:"cat2"`
 	Service      string  `json:"service"`
@@ -26,7 +26,7 @@ type Service struct {
 }
 
 type Level struct {
-	Id      uint    `json:"id" gorm:"primary_key"`
+	Id      uint    `json:"id" gorm:"primaryKey"`
 	Name    string  `json:"name"`
 	Adapter float64 `json:"adapter"`
 }
@@ -38,9 +38,10 @@ type ContactMessage struct {
 }
 
 type JoinusApplicant struct {
-	ID        uint           `json:"id" gorm:"primary_key"`
+	ID        uint           `json:"id" gorm:"primaryKey;autoIncrement"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt time.Time      `json:"deleted_at"`
 	Salon     uint           `json:"salon"`
 	Role      string         `json:"role"`
 	Name      string         `json:"name"`
@@ -62,7 +63,7 @@ type ModelApplicant struct {
 }
 
 type TeamMember struct {
-	ID            uint    `json:"id" gorm:"primary_key"`
+	ID            uint    `json:"id" gorm:"primaryKey"`
 	Salon         uint    `json:"salon"`
 	StaffId       uint    `json:"staff_id"`
 	FirstName     string  `json:"first_name"`
@@ -83,7 +84,7 @@ type TeamMember struct {
 }
 
 type Review struct {
-	ID      uint   `json:"id" gorm:"primary_key"`
+	ID      uint   `json:"id" gorm:"primaryKey"`
 	Date    string `json:"date"`
 	Salon   uint   `json:"salon"`
 	Review  string `json:"review"`
@@ -93,7 +94,7 @@ type Review struct {
 }
 
 type MetaInfo struct {
-	ID    uint   `json:"id" gorm:"primary_key"`
+	ID    uint   `json:"id" gorm:"primaryKey"`
 	Salon uint   `json:"salon"`
 	Page  string `json:"page"`
 	Title string `json:"title"`
@@ -102,7 +103,7 @@ type MetaInfo struct {
 }
 
 type BookingRequest struct {
-	ID        uint   `json:"id" gorm:"primary_key"`
+	ID        uint   `json:"id" gorm:"primaryKey"`
 	Salon     uint   `json:"salon"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
