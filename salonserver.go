@@ -52,12 +52,14 @@ func Serve(s int) {
 
 	r.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir(dir))))
 	r.HandleFunc("/api/team", apiTeam)
+	r.HandleFunc("/api/joinus-email-response", apiJoinUsEmailer).Methods("PATCH")
 	r.HandleFunc("/api/team/{slug}", apiTeamMember)
 	r.HandleFunc("/api/sendMessage", apiSendMessage)
 	r.HandleFunc("/api/joinus", apiJoinus)
 	r.HandleFunc("/api/joinus-applicants", apiJoinusApplicants).Methods("GET")
 	r.HandleFunc("/api/joinus-applicant/{id}", apiJoinusApplicant).Methods("GET")
 	r.HandleFunc("/api/joinus-applicant/{id}", apiJoinUsApplicantUpdate).Methods("PATCH")
+
 	r.HandleFunc("/api/models", apiModel)
 	r.HandleFunc("/api/reviews/{tm}", apiReviews)
 	r.HandleFunc("/api/booking-request", apiBookingRequest)

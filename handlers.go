@@ -283,13 +283,13 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	switch salon {
 	case 1:
-		salonName = "Jakata"
+		salonName = "Jakata Salon"
 		address = "info@jakatasalon.co.uk"
 	case 2:
-		salonName = "PK"
+		salonName = "Paul Kemp Hairdressing"
 		address = "info@paulkemphairdressing.com"
 	case 3:
-		salonName = "Base"
+		salonName = "Base Hairdressing"
 		address = "info@basehairdressing.com"
 	}
 
@@ -323,7 +323,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	sender := address
 	subject := "New " + data.Role + " Applicant for " + salonName
 	body := textContent
-	recipient := "adam@jakatasalon.co.uk, jimmy@jakatasalon.co.uk"
+	recipient := "adam@jakatasalon.co.uk"
 
 	m := mg.NewMessage(sender, subject, body, recipient)
 
@@ -339,8 +339,44 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send email to applicant
+
+	applicantHtmlContent, err := ParseEmailTemplate("templates/recruitment/initial.gohtml", struct {
+		Name      string
+		SalonName string
+	}{
+		Name:      data.Name,
+		SalonName: salonName,
+	})
+	if err != nil {
+		http.Error(w, "Failed to parse HTML email template for applicant", http.StatusInternalServerError)
+		return
+	}
+	applicantTextContent, err := ParseEmailTemplate("templates/recruitment/initial.txt", struct {
+		Name      string
+		SalonName string
+	}{
+		Name:      data.Name,
+		SalonName: salonName,
+	})
+	if err != nil {
+		http.Error(w, "Failed to parse text email template for applicant", http.StatusInternalServerError)
+		return
+	}
+
+	applicantEmail := data.Email
+	applicantSubject := "Thank you for applying to " + salonName
+	applicantBody := applicantTextContent
+	mApplicant := mg.NewMessage(sender, applicantSubject, applicantBody, applicantEmail)
+	mApplicant.SetHtml(applicantHtmlContent)
+	respApplicant, idApplicant, err := mg.Send(ctx, mApplicant)
+	if err != nil {
+		http.Error(w, "Failed to send email to applicant", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Application submitted successfully. ID: %s Resp: %s\n", id, resp)
+	fmt.Fprintf(w, "Application submitted successfully. ID: %s Resp: %s. Applicant Email ID: %s Resp: %s\n", id, resp, idApplicant, respApplicant)
 }
 
 func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
@@ -424,6 +460,131 @@ func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	type RequestBody struct {
+		ID            uint   `json:"ID"`
+		EmailResponse string `json:"EmailResponse"`
+	}
+
+	var requestBody RequestBody
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&requestBody)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to decode request body", "details": "`+err.Error()+`"}`, http.StatusBadRequest)
+		return
+	}
+
+	var applicant JoinusApplicant
+	if err := DB.First(&applicant, requestBody.ID).Error; err != nil {
+		http.Error(w, `{"error": "Applicant not found"}`, http.StatusNotFound)
+		return
+	}
+
+	var salonName, address, logoLink, logoLinkWhite string
+	switch applicant.Salon {
+	case 1:
+		salonName = "Jakata Salon"
+		address = "info@jakatasalon.co.uk"
+		logoLink = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/jakata.png"
+		logoLinkWhite = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/jakata-white.png"
+	case 2:
+		salonName = "Paul Kemp Hairdressing"
+		address = "info@paulkemphairdressing.com"
+		logoLink = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/pk.png"
+		logoLinkWhite = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/pk-white.png"
+	case 3:
+		salonName = "Base Hairdressing"
+		address = "info@basehairdressing.com"
+		logoLink = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/base.png"
+		logoLinkWhite = "https://35fba853288929fc2c78-69cb25cc8c90ed23a3699fb2b2ac841c.ssl.cf5.rackcdn.com/email/base-white.png"
+	default:
+		http.Error(w, `{"error": "Invalid salon ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var htmlTemplatePath, textTemplatePath string
+	switch requestBody.EmailResponse { // Assuming FollowUp is used for email status
+	case "unsuccessful":
+		htmlTemplatePath = "templates/recruitment/unsuccessful.gohtml"
+		textTemplatePath = "templates/recruitment/unsuccessful.txt"
+	case "maybe":
+		htmlTemplatePath = "templates/recruitment/maybe.gohtml"
+		textTemplatePath = "templates/recruitment/maybe.txt"
+	case "successful":
+		htmlTemplatePath = "templates/recruitment/successful.gohtml"
+		textTemplatePath = "templates/recruitment/successful.txt"
+	default:
+		debugInfo := map[string]string{
+			"error":         "Invalid status",
+			"emailResponse": applicant.EmailResponse,
+			"followUp":      applicant.FollowUp,
+		}
+
+		log.Printf("Invalid status received: '%s'. Applicant FollowUp: '%s'", applicant.EmailResponse, applicant.FollowUp)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		if err := json.NewEncoder(w).Encode(debugInfo); err != nil {
+			log.Printf("Failed to write error response: %v", err)
+			http.Error(w, `{"error": "Failed to write error response"}`, http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Include additional data for the templates
+	templateData := struct {
+		JoinusApplicant
+		SalonName     string
+		LogoLink      string
+		LogoLinkWhite string
+	}{
+		JoinusApplicant: applicant,
+		SalonName:       salonName,
+		LogoLink:        logoLink,
+		LogoLinkWhite:   logoLinkWhite,
+	}
+
+	htmlContent, err := ParseEmailTemplate(htmlTemplatePath, templateData)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to parse HTML email template", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	textContent, err := ParseEmailTemplate(textTemplatePath, templateData)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to parse text email template", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	mg := mailgun.NewMailgun(os.Getenv("MAILGUN_DOMAIN"), os.Getenv("MAILGUN_KEY"))
+	sender := address
+	subject := "Follow up on your application to " + salonName
+	body := textContent
+	recipient := applicant.Email
+	m := mg.NewMessage(sender, subject, body, recipient)
+	m.SetHtml(htmlContent)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, id, err := mg.Send(ctx, m)
+	if err != nil {
+		http.Error(w, `{"error": "Failed to send email"}`, http.StatusInternalServerError)
+		return
+	}
+
+	if err := DB.Model(&applicant).Update("EmailResponse", requestBody.EmailResponse).Error; err != nil {
+		http.Error(w, `{"error": "Failed to update EmailResponse"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"message": "Email Successfully sent", "ID": "%s", "Resp": "%s"}`, id, resp)
 }
 
 func apiModel(w http.ResponseWriter, r *http.Request) {
