@@ -587,6 +587,34 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"message": "Email Successfully sent", "ID": "%s", "Resp": "%s"}`, id, resp)
 }
 
+func apiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Extract applicant ID from the URL parameters (using gorilla/mux)
+	vars := mux.Vars(r)
+	applicantID := vars["id"]
+	// Find the applicant record by ID
+	var applicant JoinusApplicant
+	if result := DB.First(&applicant, applicantID); result.Error != nil {
+		http.Error(w, "Applicant not found", http.StatusNotFound)
+		return
+	}
+	// Update the role to "Saturday/Evening"
+	if result := DB.Model(&applicant).Update("role", "Saturday"); result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with the updated applicant record
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(applicant); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func apiModel(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
