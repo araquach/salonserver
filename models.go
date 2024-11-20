@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"gorm.io/datatypes"
+	gorm2 "gorm.io/gorm"
 	"time"
 )
 
@@ -38,22 +39,22 @@ type ContactMessage struct {
 }
 
 type JoinusApplicant struct {
-	ID            uint           `json:"id" gorm:"primaryKey;autoIncrement"`
-	CreatedAt     *time.Time     `json:"created_at"`
-	UpdatedAt     *time.Time     `json:"updated_at"`
-	DeletedAt     *time.Time     `json:"deleted_at"`
-	Salon         uint           `json:"salon"`
-	Role          string         `json:"role"`
-	Name          string         `json:"name"`
-	Mobile        string         `json:"mobile"`
-	Email         string         `json:"email"`
-	Position      string         `json:"position"`
-	About         string         `json:"about"`
-	WhyHair       string         `json:"why_hair"`
-	WhyUs         string         `json:"why_us"`
-	FollowUp      string         `json:"follow_up"`
-	Notes         pq.StringArray `json:"notes" gorm:"type:text[]"`
-	EmailResponse string         `json:"email_response"`
+	ID            uint            `json:"id" gorm:"primaryKey;autoIncrement"`
+	CreatedAt     *time.Time      `json:"created_at"`
+	UpdatedAt     *time.Time      `json:"updated_at"`
+	DeletedAt     gorm2.DeletedAt `json:"deleted_at"`
+	Salon         uint            `json:"salon"`
+	Role          string          `json:"role"`
+	Name          string          `json:"name"`
+	Mobile        string          `json:"mobile"`
+	Email         string          `json:"email"`
+	Position      string          `json:"position"`
+	About         string          `json:"about"`
+	WhyHair       string          `json:"why_hair"`
+	WhyUs         string          `json:"why_us"`
+	FollowUp      string          `json:"follow_up"`
+	Notes         pq.StringArray  `json:"notes" gorm:"type:text[]"`
+	EmailResponse string          `json:"email_response"`
 }
 
 type ModelApplicant struct {

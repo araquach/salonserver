@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"github.com/mailgun/mailgun-go/v3"
 	"github.com/russross/blackfriday"
@@ -16,6 +17,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -382,14 +384,34 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	applicants := []JoinusApplicant{}
-	DB.Order("id desc").Find(&applicants)
+	vars := mux.Vars(r)
+	param := vars["status"]
 
-	json, err := json.Marshal(applicants)
+	applicants := []JoinusApplicant{}
+
+	if param == "archived" {
+		err := DB.Unscoped().Order("id desc").Where("deleted_at IS NOT NULL").Find(&applicants).Error
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		err := DB.Order("id desc").Where("deleted_at IS NULL").Find(&applicants).Error
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	jsonData, err := json.Marshal(applicants)
 	if err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	w.Write(json)
+	w.Write(jsonData)
 }
 
 func apiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
@@ -613,6 +635,37 @@ func apiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func apiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)                          // Get variables from URL
+	applicantID, err := strconv.Atoi(vars["id"]) // Convert the id from string to int
+	if err != nil {
+		http.Error(w, "Invalid applicant ID", http.StatusBadRequest)
+		return
+	}
+
+	var applicant JoinusApplicant
+	if err := DB.First(&applicant, applicantID).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			http.Error(w, "Applicant not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if err := DB.Model(&applicant).Update("follow_up", "archived").Error; err != nil {
+		http.Error(w, "Failed to update applicant follow_up", http.StatusInternalServerError)
+		return
+	}
+
+	if err := DB.Delete(&applicant).Error; err != nil {
+		http.Error(w, "Failed to delete applicant", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent) // No Content status code
 }
 
 func apiModel(w http.ResponseWriter, r *http.Request) {
