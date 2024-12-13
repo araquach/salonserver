@@ -1,4 +1,4 @@
-package salonserver
+package helpers
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ func ParseEmailTemplate(templateFileName string, data interface{}) (content stri
 	return buf.String(), nil
 }
 
-func longName(n string) (l string) {
+func LongName(n string) (l string) {
 	if n == "brad" {
 		n = "bradley"
 	}

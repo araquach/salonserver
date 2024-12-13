@@ -1,9 +1,11 @@
-package salonserver
+package migrations
 
 import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"github.com/araquach/salonserver/cmd/db"
+	"github.com/araquach/salonserver/cmd/models"
 	"io"
 	"log"
 	"os"
@@ -13,16 +15,16 @@ import (
 	"strings"
 )
 
-var tiles []OnlineStoreTile
-var banners []OnlineStoreBanner
+var tiles []models.OnlineStoreTile
+var banners []models.OnlineStoreBanner
 
 func Migrate() {
-	err := DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
+	err := db.DB.Migrator().DropTable(&models.TeamMember{}, &models.MetaInfo{}, &models.Level{}, &models.Salon{}, &models.Service{}, &models.Review{}, &models.OnlineStoreBanner{}, &models.OnlineStoreTile{})
 	if err != nil {
 		log.Fatalf("Failed to seed the data: %v", err)
 		return
 	}
-	err = DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
+	err = db.DB.AutoMigrate(&models.TeamMember{}, &models.MetaInfo{}, &models.JoinusApplicant{}, &models.ModelApplicant{}, &models.Review{}, &models.BookingRequest{}, &models.Service{}, &models.Level{}, &models.Salon{}, &models.QuoteRespondent{}, &models.OpenEveningApplicant{}, &models.FeedbackResult{}, &models.Review{}, &models.OnlineStoreBanner{}, &models.OnlineStoreTile{})
 	if err != nil {
 		log.Fatalf("Failed to seed the data: %v", err)
 	}
@@ -81,17 +83,17 @@ func loadReviews() {
 
 			review.Salon = uint(salonId)
 
-			DB.Create(&review)
+			db.DB.Create(&review)
 		}
 	}
 }
 
-func parseBlock(block []string) (*Review, error) {
+func parseBlock(block []string) (*models.Review, error) {
 	headerPattern := regexp.MustCompile(`^([1-5]),,(\d{2}/\d{2}/\d{2}),,([^,]+),,`)
 	footerPattern := regexp.MustCompile(`^- (.*)`)
 	reviewPattern := regexp.MustCompile(`"""(.*?)"""`)
 
-	var review Review
+	var review models.Review
 
 	// Parse header (first line of block)
 	headerSubmatch := headerPattern.FindStringSubmatch(block[0])
@@ -149,7 +151,7 @@ func parseBlock(block []string) (*Review, error) {
 	return &review, nil
 }
 
-func divideByBlock(filename string) ([]Review, error) {
+func divideByBlock(filename string) ([]models.Review, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -160,7 +162,7 @@ func divideByBlock(filename string) ([]Review, error) {
 
 	endPattern := regexp.MustCompile(`^- .*`)
 
-	var reviews []Review
+	var reviews []models.Review
 	block := make([]string, 0)
 
 	for scanner.Scan() {
@@ -193,7 +195,7 @@ func divideByBlock(filename string) ([]Review, error) {
 
 func loadSalons() {
 	var err error
-	var salons []Salon
+	var salons []models.Salon
 	var files []string
 
 	root := "data/csv/salons"
@@ -221,7 +223,7 @@ func loadSalons() {
 			} else if error != nil {
 				log.Fatal(error)
 			}
-			salons = append(salons, Salon{
+			salons = append(salons, models.Salon{
 				Name:     line[0],
 				Logo:     line[1],
 				Image:    line[2],
@@ -231,13 +233,13 @@ func loadSalons() {
 		}
 	}
 	for _, l := range salons {
-		DB.Create(&l)
+		db.DB.Create(&l)
 	}
 }
 
 func loadLevels() {
 	var err error
-	var levels []Level
+	var levels []models.Level
 	var files []string
 
 	root := "data/csv/levels"
@@ -268,20 +270,20 @@ func loadLevels() {
 
 			a, _ := strconv.ParseFloat(line[1], 8)
 
-			levels = append(levels, Level{
+			levels = append(levels, models.Level{
 				Name:    line[0],
 				Adapter: a,
 			})
 		}
 	}
 	for _, l := range levels {
-		DB.Create(&l)
+		db.DB.Create(&l)
 	}
 }
 
 func loadServices() {
 	var err error
-	var services []Service
+	var services []models.Service
 	var files []string
 
 	root := "data/csv/services"
@@ -313,7 +315,7 @@ func loadServices() {
 			c2, _ := strconv.Atoi(line[1])
 			p, _ := strconv.ParseFloat(line[3], 8)
 			pp, _ := strconv.ParseFloat(line[4], 8)
-			services = append(services, Service{
+			services = append(services, models.Service{
 				Cat1:         uint(c1),
 				Cat2:         uint(c2),
 				Service:      line[2],
@@ -323,13 +325,13 @@ func loadServices() {
 		}
 	}
 	for _, s := range services {
-		DB.Create(&s)
+		db.DB.Create(&s)
 	}
 }
 
 func loadTeamMembers() {
 	var err error
-	var teamMembers []TeamMember
+	var teamMembers []models.TeamMember
 
 	var files []string
 
@@ -362,7 +364,7 @@ func loadTeamMembers() {
 			price, _ := strconv.ParseFloat(line[14], 8)
 			position, _ := strconv.Atoi(line[15])
 
-			teamMembers = append(teamMembers, TeamMember{
+			teamMembers = append(teamMembers, models.TeamMember{
 				Salon:         uint(salon),
 				StaffId:       uint(staffId),
 				FirstName:     line[2],
@@ -385,13 +387,13 @@ func loadTeamMembers() {
 	}
 
 	for _, m := range teamMembers {
-		DB.Create(&m)
+		db.DB.Create(&m)
 	}
 }
 
 func loadMetaInfo() {
 	var err error
-	var metaInfos []MetaInfo
+	var metaInfos []models.MetaInfo
 
 	var files []string
 
@@ -420,7 +422,7 @@ func loadMetaInfo() {
 			}
 
 			salon, _ := strconv.Atoi(line[0])
-			metaInfos = append(metaInfos, MetaInfo{
+			metaInfos = append(metaInfos, models.MetaInfo{
 				Salon: uint(salon),
 				Page:  line[1],
 				Title: line[2],
@@ -430,7 +432,7 @@ func loadMetaInfo() {
 		}
 	}
 	for _, m := range metaInfos {
-		DB.Create(&m)
+		db.DB.Create(&m)
 	}
 }
 
@@ -447,14 +449,14 @@ func loadTiles() {
 			log.Fatal(error)
 		}
 
-		tiles = append(tiles, OnlineStoreTile{
+		tiles = append(tiles, models.OnlineStoreTile{
 			Brand:       line[0],
 			Description: line[1],
 			Image:       line[2],
 			Url:         line[3],
 		})
 	}
-	DB.Create(&tiles)
+	db.DB.Create(&tiles)
 }
 
 func loadBanners() {
@@ -470,10 +472,10 @@ func loadBanners() {
 			log.Fatal(error)
 		}
 
-		banners = append(banners, OnlineStoreBanner{
+		banners = append(banners, models.OnlineStoreBanner{
 			Image: line[0],
 			Url:   line[1],
 		})
 	}
-	DB.Create(&banners)
+	db.DB.Create(&banners)
 }

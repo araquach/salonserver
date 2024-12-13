@@ -1,9 +1,13 @@
-package salonserver
+package handlers
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/araquach/salonserver/cmd/db"
+	"github.com/araquach/salonserver/cmd/helpers"
+	"github.com/araquach/salonserver/cmd/models"
+	"github.com/araquach/salonserver/cmd/shared"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
@@ -55,7 +59,7 @@ func responseJSON(w http.ResponseWriter, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
+func Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	// Generate version number for scripts and css
 	rand.Seed(time.Now().UnixNano())
@@ -64,7 +68,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	var salonURL string
 
-	switch salon {
+	switch shared.Salon {
 	case 1:
 		salonURL = "https://www.jakatasalon.co.uk"
 	case 2:
@@ -82,8 +86,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if dir == "team" || dir == "team-info" && len(name) > 0 {
-		m := TeamMember{}
-		DB.Where("salon = ? AND slug = ?", salon, name).First(&m)
+		m := models.TeamMember{}
+		db.DB.Where("salon = ? AND slug = ?", shared.Salon, name).First(&m)
 
 		t = m.FirstName + " " + m.LastName
 		d = m.Para1 + " " + m.Para2
@@ -96,11 +100,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 			i = salonURL + "/dist/img/fb_meta/reviews.png"
 
 		} else {
-			r := Review{}
-			ln := longName(name)
+			r := models.Review{}
+			ln := helpers.LongName(name)
 			param := strings.Title(ln)
 
-			DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").First(&r)
+			db.DB.Where("salon = ?", shared.Salon).Where("stylist LIKE ?", param+" %").First(&r)
 
 			t = param + " recently received this great review!"
 			d = r.Review
@@ -132,13 +136,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	} else {
 		page := path.Join(dir, name)
 
-		m := MetaInfo{}
-		DB.Where("salon = ?", salon).Where("page = ?", page).First(&m)
+		m := models.MetaInfo{}
+		db.DB.Where("salon = ?", shared.Salon).Where("page = ?", page).First(&m)
 
 		if m.Title != "" {
 			t = m.Title
 		} else {
-			switch salon {
+			switch shared.Salon {
 			case 1:
 				t = "Fashion Forward Hairdressing"
 			case 2:
@@ -151,7 +155,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		if m.Text != "" {
 			d = m.Text
 		} else {
-			switch salon {
+			switch shared.Salon {
 			case 1:
 				d = "Jakata is a fashion forward salon in Warrington Town Centre"
 			case 2:
@@ -182,18 +186,18 @@ func home(w http.ResponseWriter, r *http.Request) {
 		"version":       v,
 	}
 
-	if err := tpl.Execute(w, meta); err != nil {
+	if err := TplIndex.Execute(w, meta); err != nil {
 		panic(err)
 	}
 }
 
 // api
 
-func apiTeam(w http.ResponseWriter, r *http.Request) {
+func ApiTeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var team []TeamMember
-	DB.Where("salon = ?", salon).Order("position").Find(&team)
+	var team []models.TeamMember
+	db.DB.Where("salon = ?", shared.Salon).Order("position").Find(&team)
 
 	json, err := json.Marshal(team)
 	if err != nil {
@@ -202,14 +206,14 @@ func apiTeam(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiTeamMember(w http.ResponseWriter, r *http.Request) {
+func ApiTeamMember(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	param := vars["slug"]
 
-	tm := TeamMember{}
-	DB.Where("salon = ?", salon).Where("slug = ?", param).First(&tm)
+	tm := models.TeamMember{}
+	db.DB.Where("salon = ?", shared.Salon).Where("slug = ?", param).First(&tm)
 
 	json, err := json.Marshal(tm)
 	if err != nil {
@@ -218,10 +222,10 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiReviews(w http.ResponseWriter, r *http.Request) {
+func ApiReviews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	reviews := []Review{}
+	reviews := []models.Review{}
 	vars := mux.Vars(r)
 	param := vars["tm"]
 
@@ -229,14 +233,14 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 		param = strings.Split(param, "-")[0]
 	}
 
-	ln := longName(param)
+	ln := helpers.LongName(param)
 
 	param = strings.Title(ln)
 
 	if param == "All" {
-		DB.Where("salon = ?", salon).Where("rating > 3").Where("review != ''").Where("review != '\"'").Limit(50).Find(&reviews)
+		db.DB.Where("salon = ?", shared.Salon).Where("rating > 3").Where("review != ''").Where("review != '\"'").Limit(50).Find(&reviews)
 	} else {
-		DB.Where("salon = ?", salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("review != ''").Where("review != '\"'").Limit(20).Find(&reviews)
+		db.DB.Where("salon = ?", shared.Salon).Where("stylist LIKE ?", param+" %").Where("rating > 3").Where("review != ''").Where("review != '\"'").Limit(20).Find(&reviews)
 	}
 
 	json, err := json.Marshal(reviews)
@@ -246,10 +250,10 @@ func apiReviews(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiSendMessage(w http.ResponseWriter, r *http.Request) {
+func ApiSendMessage(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data ContactMessage
+	var data models.ContactMessage
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
@@ -280,10 +284,10 @@ func apiSendMessage(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func apiJoinus(w http.ResponseWriter, r *http.Request) {
+func ApiJoinus(w http.ResponseWriter, r *http.Request) {
 	var salonName, address string
 
-	switch salon {
+	switch shared.Salon {
 	case 1:
 		salonName = "Jakata Salon"
 		address = "info@jakatasalon.co.uk"
@@ -297,24 +301,24 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var data JoinusApplicant
+	var data models.JoinusApplicant
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := DB.Create(&data).Error; err != nil {
+	if err := db.DB.Create(&data).Error; err != nil {
 		http.Error(w, "Failed to save data", http.StatusInternalServerError)
 		return
 	}
 
-	htmlContent, err := ParseEmailTemplate("templates/recruitment.gohtml", data)
+	htmlContent, err := helpers.ParseEmailTemplate("templates/recruitment.gohtml", data)
 	if err != nil {
 		http.Error(w, "Failed to parse HTML email template", http.StatusInternalServerError)
 		return
 	}
 
-	textContent, err := ParseEmailTemplate("templates/recruitment.txt", data)
+	textContent, err := helpers.ParseEmailTemplate("templates/recruitment.txt", data)
 	if err != nil {
 		http.Error(w, "Failed to parse text email template", http.StatusInternalServerError)
 		return
@@ -343,7 +347,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 
 	// Send email to applicant
 
-	applicantHtmlContent, err := ParseEmailTemplate("templates/recruitment/initial.gohtml", struct {
+	applicantHtmlContent, err := helpers.ParseEmailTemplate("templates/recruitment/initial.gohtml", struct {
 		Name      string
 		SalonName string
 	}{
@@ -354,7 +358,7 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse HTML email template for applicant", http.StatusInternalServerError)
 		return
 	}
-	applicantTextContent, err := ParseEmailTemplate("templates/recruitment/initial.txt", struct {
+	applicantTextContent, err := helpers.ParseEmailTemplate("templates/recruitment/initial.txt", struct {
 		Name      string
 		SalonName string
 	}{
@@ -381,23 +385,23 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Application submitted successfully. ID: %s Resp: %s. Applicant Email ID: %s Resp: %s\n", id, resp, idApplicant, respApplicant)
 }
 
-func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
+func ApiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	param := vars["status"]
 
-	applicants := []JoinusApplicant{}
+	applicants := []models.JoinusApplicant{}
 
 	if param == "archived" {
-		err := DB.Unscoped().Order("id desc").Where("deleted_at IS NOT NULL").Find(&applicants).Error
+		err := db.DB.Unscoped().Order("id desc").Where("deleted_at IS NOT NULL").Find(&applicants).Error
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		err := DB.Order("id desc").Where("deleted_at IS NULL").Find(&applicants).Error
+		err := db.DB.Order("id desc").Where("deleted_at IS NULL").Find(&applicants).Error
 		if err != nil {
 			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -414,14 +418,14 @@ func apiJoinusApplicants(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func apiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
+func ApiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	param := vars["id"]
 
-	applicant := JoinusApplicant{}
-	DB.Preload("Notes").Where("id = ?", param).First(&applicant)
+	applicant := models.JoinusApplicant{}
+	db.DB.Preload("Notes").Where("id = ?", param).First(&applicant)
 
 	json, err := json.Marshal(applicant)
 	if err != nil {
@@ -430,7 +434,7 @@ func apiJoinusApplicant(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
+func ApiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -466,13 +470,13 @@ func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var applicant JoinusApplicant
-	if result := DB.First(&applicant, applicantID); result.Error != nil {
+	var applicant models.JoinusApplicant
+	if result := db.DB.First(&applicant, applicantID); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusNotFound)
 		return
 	}
 
-	if result := DB.Model(&applicant).Updates(updateFields); result.Error != nil {
+	if result := db.DB.Model(&applicant).Updates(updateFields); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -484,7 +488,7 @@ func apiJoinUsApplicantUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
+func ApiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	type RequestBody struct {
@@ -500,8 +504,8 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var applicant JoinusApplicant
-	if err := DB.First(&applicant, requestBody.ID).Error; err != nil {
+	var applicant models.JoinusApplicant
+	if err := db.DB.First(&applicant, requestBody.ID).Error; err != nil {
 		http.Error(w, `{"error": "Applicant not found"}`, http.StatusNotFound)
 		return
 	}
@@ -560,7 +564,7 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 
 	// Include additional data for the templates
 	templateData := struct {
-		JoinusApplicant
+		models.JoinusApplicant
 		SalonName     string
 		LogoLink      string
 		LogoLinkWhite string
@@ -571,13 +575,13 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 		LogoLinkWhite:   logoLinkWhite,
 	}
 
-	htmlContent, err := ParseEmailTemplate(htmlTemplatePath, templateData)
+	htmlContent, err := helpers.ParseEmailTemplate(htmlTemplatePath, templateData)
 	if err != nil {
 		http.Error(w, `{"error": "Failed to parse HTML email template", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 
-	textContent, err := ParseEmailTemplate(textTemplatePath, templateData)
+	textContent, err := helpers.ParseEmailTemplate(textTemplatePath, templateData)
 	if err != nil {
 		http.Error(w, `{"error": "Failed to parse text email template", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
@@ -600,7 +604,7 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := DB.Model(&applicant).Update("EmailResponse", requestBody.EmailResponse).Error; err != nil {
+	if err := db.DB.Model(&applicant).Update("EmailResponse", requestBody.EmailResponse).Error; err != nil {
 		http.Error(w, `{"error": "Failed to update EmailResponse"}`, http.StatusInternalServerError)
 		return
 	}
@@ -609,7 +613,7 @@ func apiJoinUsEmailer(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"message": "Email Successfully sent", "ID": "%s", "Resp": "%s"}`, id, resp)
 }
 
-func apiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
+func ApiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -618,13 +622,13 @@ func apiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	applicantID := vars["id"]
 	// Find the applicant record by ID
-	var applicant JoinusApplicant
-	if result := DB.First(&applicant, applicantID); result.Error != nil {
+	var applicant models.JoinusApplicant
+	if result := db.DB.First(&applicant, applicantID); result.Error != nil {
 		http.Error(w, "Applicant not found", http.StatusNotFound)
 		return
 	}
 	// Update the role to "Saturday/Evening"
-	if result := DB.Model(&applicant).Update("role", "Saturday"); result.Error != nil {
+	if result := db.DB.Model(&applicant).Update("role", "Saturday"); result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -637,7 +641,7 @@ func apiJoinusUpdateRole(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func apiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
+func ApiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)                          // Get variables from URL
 	applicantID, err := strconv.Atoi(vars["id"]) // Convert the id from string to int
 	if err != nil {
@@ -645,8 +649,8 @@ func apiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var applicant JoinusApplicant
-	if err := DB.First(&applicant, applicantID).Error; err != nil {
+	var applicant models.JoinusApplicant
+	if err := db.DB.First(&applicant, applicantID).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			http.Error(w, "Applicant not found", http.StatusNotFound)
 		} else {
@@ -655,12 +659,12 @@ func apiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := DB.Model(&applicant).Update("follow_up", "archived").Error; err != nil {
+	if err := db.DB.Model(&applicant).Update("follow_up", "archived").Error; err != nil {
 		http.Error(w, "Failed to update applicant follow_up", http.StatusInternalServerError)
 		return
 	}
 
-	if err := DB.Delete(&applicant).Error; err != nil {
+	if err := db.DB.Delete(&applicant).Error; err != nil {
 		http.Error(w, "Failed to delete applicant", http.StatusInternalServerError)
 		return
 	}
@@ -668,44 +672,44 @@ func apiDeleteApplicant(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent) // No Content status code
 }
 
-func apiModel(w http.ResponseWriter, r *http.Request) {
+func ApiModel(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data ModelApplicant
+	var data models.ModelApplicant
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
 
-	DB.Create(&data)
+	db.DB.Create(&data)
 
 	return
 }
 
-func apiBookingRequest(w http.ResponseWriter, r *http.Request) {
-	var data BookingRequest
-	var br BookingRequest
+func ApiBookingRequest(w http.ResponseWriter, r *http.Request) {
+	var data models.BookingRequest
+	var br models.BookingRequest
 	var dbResponse Response
 
 	json.NewDecoder(r.Body).Decode(&data)
 
-	DB.Where("mobile", data.Mobile).First(&br)
+	db.DB.Where("mobile", data.Mobile).First(&br)
 
 	if data.Mobile == br.Mobile {
 		dbResponse.Message = "You've already registered! We'll be in touch soon"
 		responseJSON(w, dbResponse)
 		return
 	}
-	DB.Create(&data)
+	db.DB.Create(&data)
 
 	sendSms(data.Stylist)
 	return
 }
 
-func apiBlogPost(w http.ResponseWriter, r *http.Request) {
+func ApiBlogPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var blog Blog
+	var blog models.Blog
 	var fn string
 
 	params := mux.Vars(r)
@@ -736,7 +740,7 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 	body := blackfriday.MarkdownBasic([]byte(text))
 	slug := params["slug"]
 
-	blog = Blog{Slug: slug, Date: date, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)}
+	blog = models.Blog{Slug: slug, Date: date, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)}
 
 	json, err := json.Marshal(blog)
 	if err != nil {
@@ -745,10 +749,10 @@ func apiBlogPost(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
+func ApiBlogPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var blogs []Blog
+	var blogs []models.Blog
 
 	files, err := ioutil.ReadDir("blog")
 	if err != nil {
@@ -779,7 +783,7 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 			text := strings.Join(lines[6:8], "\n")
 			body := blackfriday.MarkdownBasic([]byte(text))
 
-			blogs = append(blogs, Blog{Slug: slug, Date: bDate, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)})
+			blogs = append(blogs, models.Blog{Slug: slug, Date: bDate, Title: title, Image: image, Intro: intro, Author: author, Body: string(body)})
 		}
 	}
 	sort.SliceStable(blogs, func(i, j int) bool { return blogs[i].Date > blogs[j].Date })
@@ -791,10 +795,10 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiNewsItems(w http.ResponseWriter, r *http.Request) {
+func ApiNewsItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var blogs []Blog
+	var blogs []models.Blog
 
 	files, err := ioutil.ReadDir("blog")
 	if err != nil {
@@ -823,7 +827,7 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 			text := lines[6]
 			body := strings.Split(text, ".")
 
-			blogs = append(blogs, Blog{Slug: slug, Date: bDate, Title: title, Image: image, Body: body[0]})
+			blogs = append(blogs, models.Blog{Slug: slug, Date: bDate, Title: title, Image: image, Body: body[0]})
 		}
 	}
 	sort.SliceStable(blogs, func(i, j int) bool { return blogs[i].Date > blogs[j].Date })
@@ -839,12 +843,12 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiServices(w http.ResponseWriter, r *http.Request) {
+func ApiServices(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var p []Service
+	var p []models.Service
 
-	DB.Find(&p)
+	db.DB.Find(&p)
 
 	json, err := json.Marshal(p)
 	if err != nil {
@@ -853,12 +857,12 @@ func apiServices(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiStylists(w http.ResponseWriter, r *http.Request) {
+func ApiStylists(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var s []TeamMember
+	var s []models.TeamMember
 
-	DB.Find(&s)
+	db.DB.Find(&s)
 
 	json, err := json.Marshal(s)
 	if err != nil {
@@ -867,12 +871,12 @@ func apiStylists(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiLevels(w http.ResponseWriter, r *http.Request) {
+func ApiLevels(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var l []Level
+	var l []models.Level
 
-	DB.Find(&l)
+	db.DB.Find(&l)
 
 	json, err := json.Marshal(l)
 	if err != nil {
@@ -881,12 +885,12 @@ func apiLevels(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiSalons(w http.ResponseWriter, r *http.Request) {
+func ApiSalons(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var s []Salon
+	var s []models.Salon
 
-	DB.Find(&s)
+	db.DB.Find(&s)
 
 	json, err := json.Marshal(s)
 	if err != nil {
@@ -895,19 +899,19 @@ func apiSalons(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
+func ApiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	var salonURL, salonName, salonEmail, tplFolder string
-	var data QuoteRespondent
-	var quote QuoteInfo
+	var data models.QuoteRespondent
+	var quote models.QuoteInfo
 
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
 
-	DB.Create(&data)
+	db.DB.Create(&data)
 
 	sID := data.StylistSalonID
 
@@ -959,12 +963,12 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	quote.Discount = quote.Total * .8
 	quote.Expires = formatted
 
-	htmlContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.gohtml", quote)
+	htmlContent, err := helpers.ParseEmailTemplate("templates/"+tplFolder+"/quote.gohtml", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	textContent, err := ParseEmailTemplate("templates/"+tplFolder+"/quote.txt", quote)
+	textContent, err := helpers.ParseEmailTemplate("templates/"+tplFolder+"/quote.txt", quote)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -993,15 +997,15 @@ func apiSaveQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 }
 
-func apiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
+func ApiGetQuoteDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var services QuoteRespondent
+	var services models.QuoteRespondent
 
 	vars := mux.Vars(r)
 	param := vars["link"]
 
-	DB.Where("link", param).First(&services)
+	db.DB.Where("link", param).First(&services)
 
 	json, err := json.Marshal(services)
 	if err != nil {
@@ -1066,52 +1070,52 @@ func sendSms(n string) {
 	}
 }
 
-func apiOpenEvening(w http.ResponseWriter, r *http.Request) {
+func ApiOpenEvening(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data OpenEveningApplicant
+	var data models.OpenEveningApplicant
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
 
-	DB.Create(&data)
+	db.DB.Create(&data)
 
 	return
 }
 
-func apiFeedbackResult(w http.ResponseWriter, r *http.Request) {
+func ApiFeedbackResult(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data FeedbackResult
+	var data models.FeedbackResult
 	err := decoder.Decode(&data)
 	if err != nil {
 		panic(err)
 	}
 
-	DB.Create(&data)
+	db.DB.Create(&data)
 
 	return
 }
 
-func apiStoreData(w http.ResponseWriter, r *http.Request) {
+func ApiStoreData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var storeData struct {
-		Tiles   []OnlineStoreTile   `json:"tiles"`
-		Banners []OnlineStoreBanner `json:"banners"`
+		Tiles   []models.OnlineStoreTile   `json:"tiles"`
+		Banners []models.OnlineStoreBanner `json:"banners"`
 	}
 
-	var tiles []OnlineStoreTile
-	var banners []OnlineStoreBanner
+	var tiles []models.OnlineStoreTile
+	var banners []models.OnlineStoreBanner
 
-	if err := DB.Find(&tiles).Error; err != nil {
+	if err := db.DB.Find(&tiles).Error; err != nil {
 		http.Error(w, "Failed to retrieve tiles", http.StatusInternalServerError)
 		log.Println("Error retrieving tiles:", err)
 		return
 	}
 
-	if err := DB.Find(&banners).Error; err != nil {
+	if err := db.DB.Find(&banners).Error; err != nil {
 		http.Error(w, "Failed to retrieve banners", http.StatusInternalServerError)
 		log.Println("Error retrieving banners:", err)
 		return

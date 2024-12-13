@@ -1,4 +1,4 @@
-package salonserver
+package db
 
 import (
 	"gorm.io/driver/postgres"
@@ -19,5 +19,3 @@ func DBInit(dsn string) {
 		log.Panic(err)
 	}
 }
-
-
