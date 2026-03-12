@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gomarkdown/markdown"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 	"github.com/mailgun/mailgun-go/v3"
 	"github.com/russross/blackfriday"
 	"github.com/textmagic/textmagic-rest-go"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -216,6 +218,47 @@ func apiTeamMember(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	w.Write(json)
+}
+
+func loadProfile(slug string) (*Profile, error) {
+	path := fmt.Sprintf("profiles/%s.md", slug)
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	parts := strings.SplitN(string(content), "---", 3)
+	if len(parts) < 3 {
+		return nil, fmt.Errorf("invalid markdown format")
+	}
+
+	var profile Profile
+	err = yaml.Unmarshal([]byte(parts[1]), &profile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert Markdown to HTML
+	profile.Intro = string(markdown.ToHTML([]byte(profile.Intro), nil, nil))
+	for i := range profile.Sections {
+		profile.Sections[i].Text = string(markdown.ToHTML([]byte(profile.Sections[i].Text), nil, nil))
+	}
+
+	return &profile, nil
+}
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	slug := vars["slug"]
+
+	profile, err := loadProfile(slug)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(profile)
 }
 
 func apiReviews(w http.ResponseWriter, r *http.Request) {
@@ -757,7 +800,7 @@ func apiBlogPosts(w http.ResponseWriter, r *http.Request) {
 
 	for _, f := range files {
 		today := time.Now()
-		startFrom := today.Add(-8760 * time.Hour)
+		startFrom := today.Add(-17520 * time.Hour)
 		split := strings.Split(f.Name(), " ")
 		date, err := time.Parse("2006-01-02", split[0])
 		if err != nil {
@@ -803,7 +846,7 @@ func apiNewsItems(w http.ResponseWriter, r *http.Request) {
 
 	for _, f := range files {
 		today := time.Now()
-		startFrom := today.Add(-8760 * time.Hour)
+		startFrom := today.Add(-17520 * time.Hour)
 		split := strings.Split(f.Name(), " ")
 		date, err := time.Parse("2006-01-02", split[0])
 		if err != nil {

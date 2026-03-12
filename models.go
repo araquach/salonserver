@@ -85,6 +85,20 @@ type TeamMember struct {
 	Slug          string  `json:"slug"`
 }
 
+type Profile struct {
+	Name     string `yaml:"name"`
+	Slug     string `yaml:"slug"`
+	Title    string `yaml:"title"`
+	Subtitle string `yaml:"subtitle"`
+	Intro    string `yaml:"intro"`
+	Sections []struct {
+		Text  string `yaml:"text"`
+		Image string `yaml:"image"`
+	} `yaml:"sections"`
+	Instagram   string `yaml:"instagram"`
+	InstaHandle string `yaml:"instaHandle"`
+}
+
 type Review struct {
 	ID      uint   `json:"id" gorm:"primaryKey"`
 	Date    string `json:"date"`

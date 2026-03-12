@@ -53,6 +53,7 @@ func Serve(s int) {
 	r.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir(dir))))
 	r.HandleFunc("/api/team", apiTeam)
 	r.HandleFunc("/api/team/{slug}", apiTeamMember)
+	r.HandleFunc("/api/profile/{slug}", profileHandler).Methods("GET")
 	r.HandleFunc("/api/sendMessage", apiSendMessage)
 	r.HandleFunc("/api/joinus", apiJoinus)
 	r.HandleFunc("/api/joinus-applicants/{status}", apiJoinusApplicants).Methods("GET")
