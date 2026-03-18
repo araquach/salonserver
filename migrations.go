@@ -32,7 +32,7 @@ func Migrate() {
 	loadServices()
 	loadTeamMembers()
 	loadMetaInfo()
-	loadReviews()
+	//loadReviews()
 	loadTiles()
 	loadBanners()
 }
