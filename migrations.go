@@ -17,12 +17,12 @@ var tiles []OnlineStoreTile
 var banners []OnlineStoreBanner
 
 func Migrate() {
-	err := DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
+	err := DB.Migrator().DropTable(&TeamMember{}, &MetaInfo{}, &Level{}, &Salon{}, &Service{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
 	if err != nil {
 		log.Fatalf("Failed to seed the data: %v", err)
 		return
 	}
-	err = DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &Review{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
+	err = DB.AutoMigrate(&TeamMember{}, &MetaInfo{}, &JoinusApplicant{}, &ModelApplicant{}, &BookingRequest{}, &Service{}, &Level{}, &Salon{}, &QuoteRespondent{}, &OpenEveningApplicant{}, &FeedbackResult{}, &Review{}, &OnlineStoreBanner{}, &OnlineStoreTile{})
 	if err != nil {
 		log.Fatalf("Failed to seed the data: %v", err)
 	}
