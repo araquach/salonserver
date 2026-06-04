@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -86,5 +87,19 @@ func Serve(s int) {
 
 	log.Printf("Starting server on: http://localhost:%s", port)
 
-	http.ListenAndServe(":"+port, forceSsl(r))
+	http.ListenAndServe(":"+port, forceSsl(redirectPKDomain(r)))
+}
+
+func redirectPKDomain(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		host := strings.ToLower(r.Host)
+
+		if host == "www.paulkemphairdressing.com" || host == "paulkemphairdressing.com" {
+			target := "https://www.sloanethesalon.com" + r.URL.RequestURI()
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
