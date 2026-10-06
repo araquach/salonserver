@@ -61,14 +61,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 
 	var t, d, i, fn string
-
 	var salonURL string
 
+	// Determine salon URL based on the salon
 	switch salon {
 	case 1:
 		salonURL = "https://www.jakatasalon.co.uk"
 	case 2:
-		salonURL = "https://www.paulkemphairdressing.com"
+		salonURL = "https://www.sloanethesalon.com"
 	case 3:
 		salonURL = "https://www.basehairdressing.com"
 	}
@@ -81,7 +81,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		name = "home"
 	}
 
-	if dir == "team" || dir == "team-info" && len(name) > 0 {
+	// Fetch appropriate content based on `dir` and `name`
+	if (dir == "team" || dir == "team-info") && len(name) > 0 {
 		m := TeamMember{}
 		DB.Where("salon = ? AND slug = ?", salon, name).First(&m)
 
@@ -124,6 +125,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 			return
 		}
+
 		lines := strings.Split(string(data), "\n")
 		t = lines[0]
 		i = lines[4]
@@ -131,7 +133,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		page := path.Join(dir, name)
-
 		m := MetaInfo{}
 		DB.Where("salon = ?", salon).Where("page = ?", page).First(&m)
 
@@ -155,33 +156,47 @@ func home(w http.ResponseWriter, r *http.Request) {
 			case 1:
 				d = "Jakata is a fashion forward salon in Warrington Town Centre"
 			case 2:
-				d = "Paul Kemp Hairdressing is a luxurious hair salon right in the heart of Warrington town centre. Sister salon to the award winning Jakata Hair and Beauty team, the stunning Salon opened back in June 2011 with the aim to offer an ultra relaxing atmosphere, first class customer service, alongside the highest level of hairdressing expertise. The salon's talented hairdressers are all trained to the highest level in cutting, colouring and styling hair, with specialists in technical colour, hair straightening, wedding hair and hair extensions. The team has a wealth of experience in all aspects of hairdressing"
+				d = "Sloane The Salon is a luxurious hair salon right in the heart of Warrington town centre. The salon's talented hairdressers are all trained to the highest level in cutting, colouring and styling hair, with specialists in technical colour, hair straightening, wedding hair and hair extensions. The team has a wealth of experience in all aspects of hairdressing"
 			case 3:
 				d = "Base Hairdressing is an Academy for the next generation of super-skilled stylists"
 			}
 		}
 
-		if m.Title != "" {
+		if m.Image != "" {
 			i = salonURL + "/dist/img/fb_meta/" + m.Image + ".png"
 		} else {
 			i = salonURL + "/dist/img/fb_meta/home.png"
 		}
 	}
 
+	// Generate the meta map based on whether salon is 1 or not
 	path := path.Join(dir, name)
+	v := strconv.Itoa(rand.Intn(30)) // Version for cache-busting
+	var meta map[string]string
 
-	v := string(rand.Intn(30))
-
-	meta := map[string]string{
-		"ogTitle":       t,
-		"ogDescription": d,
-		"ogImage":       i,
-		"ogImageWidth":  "1200",
-		"ogImageHeight": "628",
-		"ogUrl":         salonURL + "/" + path,
-		"version":       v,
+	if salon != 1 {
+		meta = map[string]string{
+			"ogTitle":       t,
+			"ogDescription": d,
+			"ogImage":       i,
+			"ogImageWidth":  "1200",
+			"ogImageHeight": "628",
+			"ogUrl":         salonURL + "/" + path,
+			"version":       v,
+		}
+	} else {
+		meta = map[string]string{
+			"ogTitle":       t,
+			"ogDescription": d,
+			"ogImage":       i,
+			"ogImageWidth":  "1080",
+			"ogImageHeight": "1080",
+			"ogUrl":         salonURL + "/" + path,
+			"version":       v,
+		}
 	}
 
+	// Render the final template
 	if err := tpl.Execute(w, meta); err != nil {
 		panic(err)
 	}
