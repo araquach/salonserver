@@ -296,6 +296,11 @@ func apiSendMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiJoinus(w http.ResponseWriter, r *http.Request) {
+	data, valid := readRecruitment(w, r)
+	if !valid {
+		return
+	}
+
 	var salonName, address string
 
 	switch salon {
@@ -308,14 +313,6 @@ func apiJoinus(w http.ResponseWriter, r *http.Request) {
 	case 3:
 		salonName = "Base Hairdressing"
 		address = "info@basehairdressing.com"
-	}
-
-	decoder := json.NewDecoder(r.Body)
-
-	var data JoinusApplicant
-	err := decoder.Decode(&data)
-	if err != nil {
-		panic(err)
 	}
 
 	if err := DB.Create(&data).Error; err != nil {
