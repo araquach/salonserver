@@ -131,21 +131,13 @@ func readRecruitment(w http.ResponseWriter, r *http.Request) (JoinusApplicant, b
 	}
 	data := JoinusApplicant{Name: strings.TrimSpace(request.Name), Mobile: strings.TrimSpace(request.Mobile), Email: strings.TrimSpace(request.Email), Role: strings.TrimSpace(request.Role), Position: strings.TrimSpace(request.Position), About: strings.TrimSpace(request.About), WhyHair: strings.TrimSpace(request.WhyHair), WhyUs: strings.TrimSpace(request.WhyUs), Salon: request.Salon}
 	if request.Website != "" || !validRecruitment(data) {
-		recruitmentError(w, 422, "Please check your name, phone and email, select both dropdowns, and provide written answers of 10 to 5,000 characters.")
+		recruitmentError(w, 422, "Please check your name, phone and email, check your application details, and provide written answers of 10 to 5,000 characters.")
 		return empty, false
 	}
 	return data, true
 }
 
 func validRecruitment(d JoinusApplicant) bool {
-	in := func(value string, options ...string) bool {
-		for _, option := range options {
-			if value == option {
-				return true
-			}
-		}
-		return false
-	}
 	length := func(s string, min, max int) bool {
 		n := utf8.RuneCountInString(s)
 		return utf8.ValidString(s) && n >= min && n <= max
@@ -176,7 +168,7 @@ func validRecruitment(d JoinusApplicant) bool {
 	if digits < 10 || digits > 15 || !length(d.Mobile, 10, 30) {
 		return false
 	}
-	if !in(d.Role, "Stylist", "Apprentice", "Saturday", "Other") || !in(d.Position, "at school/college", "new to hairdressing", "partway through", "already qualified", "other") || d.Salon < 1 || d.Salon > 3 {
+	if !validRecruitmentSelection(d.Salon, d.Role, d.Position) {
 		return false
 	}
 	for _, answer := range []string{d.About, d.WhyHair, d.WhyUs} {
@@ -185,4 +177,34 @@ func validRecruitment(d JoinusApplicant) bool {
 		}
 	}
 	return true
+}
+
+// Base has independent role and position dropdowns. The other sites use
+// separate role-specific forms; Saturday submits a fixed position with no dropdown.
+func validRecruitmentSelection(salonID uint, role, position string) bool {
+	contains := func(value string, options ...string) bool {
+		for _, option := range options {
+			if value == option {
+				return true
+			}
+		}
+		return false
+	}
+	if salonID == 3 {
+		return contains(role, "Stylist", "Apprentice", "Saturday", "Other") &&
+			contains(position, "at school/college", "new to hairdressing", "partway through", "already qualified", "other")
+	}
+	if salonID != 1 && salonID != 2 {
+		return false
+	}
+	switch role {
+	case "Stylist":
+		return contains(position, "less than one year", "1 - 3 years", "3 - 5 years", "5 plus years")
+	case "Apprentice":
+		return contains(position, "new to hairdressing", "partway through", "already qualified", "other")
+	case "Saturday":
+		return position == "new to hairdressing"
+	default:
+		return false
+	}
 }
