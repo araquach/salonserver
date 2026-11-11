@@ -203,3 +203,38 @@ func TestRecruitmentFormPatterns(t *testing.T) {
 		}
 	}
 }
+
+func TestRecruitmentHerokuProxy(t *testing.T) {
+	t.Setenv("JOINUS_PROXY_MODE", "heroku")
+	t.Setenv("JOINUS_TRUSTED_PROXY_CIDRS", "")
+	for _, tc := range []struct {
+		name    string
+		headers []string
+		want    string
+	}{
+		{"client", []string{"198.51.100.10"}, "198.51.100.10"},
+		{"spoofed prefix ignored", []string{"203.0.113.99, 198.51.100.10"}, "198.51.100.10"},
+		{"duplicate headers", []string{"203.0.113.99", "198.51.100.10"}, "198.51.100.10"},
+		{"IPv6", []string{"203.0.113.99, 2001:db8::10"}, "2001:db8::10"},
+		{"missing header", nil, "10.1.2.3"},
+		{"malformed final IP", []string{"198.51.100.10, invalid"}, "10.1.2.3"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest("POST", "/api/joinus", nil)
+			r.RemoteAddr = "10.1.2.3:4321"
+			for _, value := range tc.headers {
+				r.Header.Add("X-Forwarded-For", value)
+			}
+			if got := recruitmentIP(r); got != tc.want {
+				t.Fatalf("got %s, want %s", got, tc.want)
+			}
+		})
+	}
+	t.Setenv("JOINUS_PROXY_MODE", "")
+	r := httptest.NewRequest("POST", "/api/joinus", nil)
+	r.RemoteAddr = "127.0.0.1:4321"
+	r.Header.Set("X-Forwarded-For", "198.51.100.10")
+	if recruitmentIP(r) != "127.0.0.1" {
+		t.Fatal("local requests trusted forwarded header without opt-in")
+	}
+}

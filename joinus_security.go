@@ -70,6 +70,17 @@ func recruitmentIP(r *http.Request) string {
 	if err != nil {
 		host = r.RemoteAddr
 	}
+	// Enable only on Heroku apps whose inbound HTTP traffic passes through the
+	// Heroku router. It appends the actual connecting client's IP at the right;
+	// earlier entries may have been supplied by the client and must be ignored.
+	if os.Getenv("JOINUS_PROXY_MODE") == "heroku" {
+		forwarded := strings.Join(r.Header.Values("X-Forwarded-For"), ",")
+		chain := strings.Split(forwarded, ",")
+		if ip := net.ParseIP(strings.TrimSpace(chain[len(chain)-1])); ip != nil {
+			return ip.String()
+		}
+		return host
+	}
 	peer := net.ParseIP(host)
 	// Forwarded headers are trusted only from explicitly configured proxy networks.
 	for _, cidr := range strings.Split(os.Getenv("JOINUS_TRUSTED_PROXY_CIDRS"), ",") {
