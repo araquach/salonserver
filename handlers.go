@@ -179,8 +179,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 			"ogTitle":       t,
 			"ogDescription": d,
 			"ogImage":       i,
-			"ogImageWidth":  "1200",
-			"ogImageHeight": "628",
+			"ogImageWidth":  "1080",
+			"ogImageHeight": "1080",
 			"ogUrl":         salonURL + "/" + path,
 			"version":       v,
 		}
@@ -189,8 +189,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 			"ogTitle":       t,
 			"ogDescription": d,
 			"ogImage":       i,
-			"ogImageWidth":  "1080",
-			"ogImageHeight": "1080",
+			"ogImageWidth":  "1200",
+			"ogImageHeight": "628",
 			"ogUrl":         salonURL + "/" + path,
 			"version":       v,
 		}
